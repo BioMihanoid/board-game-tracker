@@ -1,1 +1,1 @@
-module Boardgame_Tracker
+module board-game-tracker
