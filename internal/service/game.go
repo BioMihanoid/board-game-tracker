@@ -2,7 +2,6 @@ package service
 
 import (
 	"context"
-	"fmt"
 
 	"board-game-tracker/internal/model"
 )
@@ -10,6 +9,7 @@ import (
 type GameRepository interface {
 	GetGameById(ctx context.Context, id int64) (*model.Game, error)
 	GetAllGame(ctx context.Context) (map[int64]*model.Game, error)
+	SaveGame(ctx context.Context, game *model.Game) error
 }
 
 type GameService struct {
@@ -22,19 +22,24 @@ func NewGameService(repo GameRepository) *GameService {
 	}
 }
 
-func (gs *GameService) PrintGames(ctx context.Context) {
-	games, err := gs.repo.GetAllGame(ctx)
+func (gs *GameService) AddGame(ctx context.Context, game *model.Game) error {
+	return gs.repo.SaveGame(ctx, game)
+}
+
+func (gs *GameService) GetGameById(ctx context.Context, id int64) (*model.Game, error) {
+	game, err := gs.repo.GetGameById(ctx, id)
 	if err != nil {
-		fmt.Printf("Игры отсуствуют\n")
-		return
+		return nil, err
 	}
 
-	for _, g := range games {
-		fmt.Printf("Название игры - %s\nТип - %s\nЦена - %0.2f\nИздатель - %s\n\n",
-			g.Name,
-			g.Type,
-			g.Cost,
-			g.Publisher,
-		)
+	return game, nil
+}
+
+func (gs *GameService) GetAllGame(ctx context.Context) (map[int64]*model.Game, error) {
+	games, err := gs.repo.GetAllGame(ctx)
+	if err != nil {
+		return nil, err
 	}
+
+	return games, nil
 }
