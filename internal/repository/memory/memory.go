@@ -1,57 +1,29 @@
 package memory
 
-import "board-game-tracker/internal/model"
+import (
+	"board-game-tracker/internal/model"
+	"board-game-tracker/internal/seed"
+)
 
-// seedGames возвращает новую копию стартовых данных,
-// чтобы каждый репозиторий владел своим состоянием.
-func seedGames() map[int64]*model.Game {
-	return map[int64]*model.Game{
-		1: {
-			ID:          1,
-			Name:        "Древний ужас",
-			CostKopecks: 5999_00,
-			Type:        model.MainGameType,
-			Publisher:   "Hobby Games",
-		},
-		2: {
-			ID:          2,
-			BaseGameID:  1,
-			Name:        "Древний ужас. Забытые тайны",
-			CostKopecks: 2999_00,
-			Type:        model.AdditionalContentGameType,
-			Publisher:   "Hobby Games",
-		},
-		3: {
-			ID:          3,
-			BaseGameID:  1,
-			Name:        "Древний ужас. Знамения каркозы",
-			CostKopecks: 2999_00,
-			Type:        model.AdditionalContentGameType,
-			Publisher:   "Hobby Games",
-		},
-		4: {
-			ID:          4,
-			BaseGameID:  1,
-			Name:        "Древний ужас. Таинственные руины",
-			CostKopecks: 2999_00,
-			Type:        model.AdditionalContentGameType,
-			Publisher:   "Hobby Games",
-		},
-		5: {
-			ID:          5,
-			BaseGameID:  1,
-			Name:        "Древний ужас. Разрушенные города",
-			CostKopecks: 2999_00,
-			Type:        model.AdditionalContentGameType,
-			Publisher:   "Hobby Games",
-		},
-		6: {
-			ID:          6,
-			BaseGameID:  1,
-			Name:        "Древний ужас. Мир грез",
-			CostKopecks: 4999_00,
-			Type:        model.AdditionalContentGameType,
-			Publisher:   "Hobby Games",
-		},
+// NewGameRepository создаёт репозиторий в памяти со стартовой коллекцией.
+// Данные живут только до выхода из программы — для хранения на диске
+// используйте repository/file.
+func NewGameRepository() *GameRepository {
+	m := make(map[int64]*model.Game)
+
+	for _, game := range seed.Games() {
+		m[game.ID] = game
+	}
+
+	nextID := int64(1)
+	for id := range m {
+		if id >= nextID {
+			nextID = id + 1
+		}
+	}
+
+	return &GameRepository{
+		m:      m,
+		nextID: nextID,
 	}
 }

@@ -15,22 +15,6 @@ type GameRepository struct {
 	rw     sync.RWMutex
 }
 
-func NewGameRepository() *GameRepository {
-	m := seedGames()
-
-	nextID := int64(1)
-	for id := range m {
-		if id >= nextID {
-			nextID = id + 1
-		}
-	}
-
-	return &GameRepository{
-		m:      m,
-		nextID: nextID,
-	}
-}
-
 func (gr *GameRepository) GetByID(_ context.Context, id int64) (*model.Game, error) {
 	gr.rw.RLock()
 	defer gr.rw.RUnlock()

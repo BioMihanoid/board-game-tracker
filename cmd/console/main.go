@@ -4,23 +4,34 @@ import (
 	"bufio"
 	"context"
 	"errors"
+	"flag"
 	"fmt"
 	"os"
 	"strings"
 
 	consolehandler "board-game-tracker/internal/handler/console"
-	memoryrepo "board-game-tracker/internal/repository/memory"
+	filerepo "board-game-tracker/internal/repository/file"
 	"board-game-tracker/internal/service"
 )
 
 func main() {
+	dataPath := flag.String("data", "data/games.json", "путь к JSON-файлу с коллекцией")
+	flag.Parse()
+
 	ctx := context.Background()
 
-	gameRepo := memoryrepo.NewGameRepository()
+	gameRepo, err := filerepo.New(*dataPath)
+	if err != nil {
+		fmt.Printf("Не удалось открыть данные: %v\n", err)
+		os.Exit(1)
+	}
+
 	gameService := service.NewGameService(gameRepo)
 
 	scanner := bufio.NewScanner(os.Stdin)
 	handler := consolehandler.NewHandler(gameService, scanner)
+
+	fmt.Printf("Данные: %s\n\n", *dataPath)
 
 	for {
 		printMenu()
