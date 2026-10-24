@@ -11,5 +11,5 @@ type Game struct {
 	MaxPlayers         int
 	PlaytimeMinutesMin int
 	PlaytimeMinutesMax int
-	Cost               float64
+	CostKopecks        int64
 }

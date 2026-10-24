@@ -3,6 +3,7 @@ package console
 import (
 	"bufio"
 	"context"
+	"errors"
 	"fmt"
 	"math"
 	"strconv"
@@ -11,11 +12,15 @@ import (
 	"board-game-tracker/internal/model"
 )
 
+var ErrInputClosed = errors.New("ввод завершён")
+
+const maxKopecks = 1_000_000_000_00
+
 type GameService interface {
-	GetGameById(ctx context.Context, id int64) (*model.Game, error)
-	GetAllGame(ctx context.Context) (map[int64]*model.Game, error)
+	GetByID(ctx context.Context, id int64) (*model.Game, error)
+	ListBaseGames(ctx context.Context) ([]*model.Game, error)
+	ListExpansions(ctx context.Context, baseID int64) ([]*model.Game, error)
 	AddGame(ctx context.Context, game *model.Game) (int64, error)
-	GetAdditionalContentByGameBaseID(ctx context.Context, id int64) (map[int64]*model.Game, error)
 }
 
 type Handler struct {
@@ -30,213 +35,285 @@ func NewHandler(gameService GameService, scanner *bufio.Scanner) *Handler {
 	}
 }
 
-func (h *Handler) PrintGameByID(ctx context.Context) {
-	var (
-		id   int64
-		game *model.Game
-		err  error
-	)
-	for {
-		id = h.getInt64Value("id")
-		game, err = h.gameService.GetGameById(ctx, id)
-		if err != nil {
-			fmt.Printf("Игра с таким id отсуствует, попробуйте ещё раз\n\n")
-			continue
-		}
-
-		break
+func (h *Handler) PrintGameByID(ctx context.Context) error {
+	game, err := h.askGame(ctx, "id")
+	if err != nil {
+		return err
 	}
 
-	fmt.Printf("\nИгра: %s\nТип: %s\nСтоимость: %0.2f\nИздатель: %s\n\n",
-		game.Name,
-		game.Type,
-		game.Cost,
-		game.Publisher,
-	)
+	printGame(game)
+
+	return nil
 }
 
-func (h *Handler) PrintAllGames(ctx context.Context) {
-	games, err := h.gameService.GetAllGame(ctx)
+func (h *Handler) PrintBaseGames(ctx context.Context) error {
+	games, err := h.gameService.ListBaseGames(ctx)
 	if err != nil {
-		fmt.Printf("Не получилось получить все игры\n\n")
-		return
+		return fmt.Errorf("получить игры: %w", err)
+	}
+
+	if len(games) == 0 {
+		fmt.Printf("Коллекция пуста\n\n")
+		return nil
 	}
 
 	for _, game := range games {
-		fmt.Printf("ID: %d\nИгра: %s\nТип: %s\nСтоимость: %0.2f\nИздатель: %s\n\n",
-			game.ID,
-			game.Name,
-			game.Type,
-			game.Cost,
-			game.Publisher,
-		)
+		printGame(game)
 	}
+
+	return nil
 }
 
-func (h *Handler) PrintAllAdditionalContentByGameID(ctx context.Context) {
-	var id int64
-	for {
-		id = h.getInt64Value("id базовой")
-		_, err := h.gameService.GetGameById(ctx, id)
-		if err != nil {
-			fmt.Printf("Игра с таким id отсуствует, попробуйте ещё раз\n\n")
-			continue
-		}
-
-		break
-	}
-
-	games, err := h.gameService.GetAdditionalContentByGameBaseID(ctx, id)
+func (h *Handler) PrintExpansions(ctx context.Context) error {
+	base, err := h.askBaseGame(ctx)
 	if err != nil {
-		fmt.Printf("Не получилось получить дополнения игры\n\n")
-		return
+		return err
 	}
 
-	for _, game := range games {
-		fmt.Printf("Название: %s\nСтоимость: %0.2f\nИздатель: %s\n\n",
-			game.Name,
-			game.Cost,
-			game.Publisher,
-		)
+	games, err := h.gameService.ListExpansions(ctx, base.ID)
+	if err != nil {
+		return fmt.Errorf("получить дополнения игры %q: %w", base.Name, err)
 	}
+
+	if len(games) == 0 {
+		fmt.Printf("У игры %q нет дополнений\n\n", base.Name)
+		return nil
+	}
+
+	fmt.Printf("Дополнения игры %q:\n\n", base.Name)
+	for _, game := range games {
+		printGame(game)
+	}
+
+	return nil
 }
 
 func (h *Handler) AddGame(ctx context.Context) (int64, error) {
-	game := &model.Game{}
+	gameType, err := h.askGameType()
+	if err != nil {
+		return 0, err
+	}
 
-	game.Type = h.getGameType()
+	game := &model.Game{Type: gameType}
 
-	if game.Type == model.AdditionalContentGameType || game.Type == model.PromoGameType {
-		var baseGame *model.Game
-		for {
-			baseGame, err := h.gameService.GetGameById(ctx, h.getInt64Value("id базовой игры"))
-			if err != nil {
-				fmt.Printf("Игра с таким id отсуствует, попробуйте ещё раз\n\n")
-				continue
-			}
-
-			game.BaseGameID = baseGame.ID
-			break
+	if gameType != model.MainGameType {
+		base, err := h.askBaseGame(ctx)
+		if err != nil {
+			return 0, err
 		}
 
 		tag := "дополнения"
-		if game.Type == model.PromoGameType {
+		if gameType == model.PromoGameType {
 			tag = "промо набора"
 		}
 
-		game.Name = baseGame.Name + ". " + h.getStringValue(fmt.Sprintf("название %s", tag))
-		game.Cost = h.getFloatValue(fmt.Sprintf("стоимость %s", tag))
-		game.Publisher = baseGame.Publisher
+		game.BaseGameID = base.ID
+		if game.Name, err = h.askString(fmt.Sprintf("название %s", tag)); err != nil {
+			return 0, err
+		}
+		if game.CostKopecks, err = h.askKopecks(fmt.Sprintf("стоимость %s", tag)); err != nil {
+			return 0, err
+		}
 
 		return h.gameService.AddGame(ctx, game)
 	}
 
-	game.Name = h.getStringValue("название")
-	game.Cost = h.getFloatValue("стоимость")
-	game.Publisher = h.getStringValue("издателя")
+	if game.Name, err = h.askString("название"); err != nil {
+		return 0, err
+	}
+	if game.CostKopecks, err = h.askKopecks("стоимость"); err != nil {
+		return 0, err
+	}
+	if game.Publisher, err = h.askString("издателя"); err != nil {
+		return 0, err
+	}
 
 	return h.gameService.AddGame(ctx, game)
 }
 
-func (h *Handler) getGameType() model.GameType {
-	for {
-		fmt.Printf(
-			"Доступные типы игры:\n1. %s\n2. %s\n3. %s\n",
-			model.MainGameType,
-			model.AdditionalContentGameType,
-			model.PromoGameType,
-		)
-		choice := h.getInt64Value("тип")
-		switch choice {
-		case 1:
-			return model.MainGameType
-		case 2:
-			return model.AdditionalContentGameType
-		case 3:
-			return model.PromoGameType
-		default:
-			fmt.Printf("Выбран не существующий тип игры, попробуйте ещё раз\n\n")
-		}
+func printGame(game *model.Game) {
+	fmt.Printf("ID: %d\nИгра: %s\nТип: %s\nСтоимость: %s ₽\nИздатель: %s\n",
+		game.ID,
+		game.Name,
+		game.Type,
+		model.FormatKopecks(game.CostKopecks),
+		game.Publisher,
+	)
+
+	if game.BaseGameID != 0 {
+		fmt.Printf("ID базовой игры: %d\n", game.BaseGameID)
 	}
+
+	fmt.Println()
 }
 
-func (h *Handler) getStringValue(in string) string {
-	for {
-		fmt.Printf("Введите %s игры: ", in)
-		ok := h.scanner.Scan()
-		if !ok {
-			fmt.Printf("Произошла ошибка, попробуйте ещё раз\n\n")
-			continue
-		}
-
-		val := h.scanner.Text()
-		switch val {
-		case "":
-			fmt.Printf("Пустой ввод, попробуйте ещё раз\n\n")
-		default:
-			return val
-		}
+func (h *Handler) askGameType() (model.GameType, error) {
+	types := []model.GameType{
+		model.MainGameType,
+		model.AdditionalContentGameType,
+		model.PromoGameType,
 	}
-}
 
-func (h *Handler) getFloatValue(in string) float64 {
 	for {
-		fmt.Printf("Введите %s игры: ", in)
-		ok := h.scanner.Scan()
-		if !ok {
-			fmt.Printf("Произошла ошибка, попробуйте ещё раз\n\n")
-			continue
+		fmt.Printf("Доступные типы игры:\n")
+		for i, gameType := range types {
+			fmt.Printf("%d. %s\n", i+1, gameType)
 		}
 
-		input := h.scanner.Text()
-		if input == "" {
-			fmt.Printf("Пустой ввод, попробуйте ещё раз\n\n")
-			continue
-		}
-
-		val, err := strconv.ParseFloat(strings.TrimSpace(input), 64)
+		choice, err := h.askInt64("тип")
 		if err != nil {
-			fmt.Printf("Произошла ошибка конвертации, попробуйте ещё раз\n\n")
-			continue
+			return "", err
 		}
 
+		if choice >= 1 && choice <= int64(len(types)) {
+			return types[choice-1], nil
+		}
+
+		fmt.Printf("Выбран несуществующий тип игры, попробуйте ещё раз\n\n")
+	}
+}
+
+func (h *Handler) askGame(ctx context.Context, label string) (*model.Game, error) {
+	for {
+		id, err := h.askInt64(label)
+		if err != nil {
+			return nil, err
+		}
+
+		game, err := h.gameService.GetByID(ctx, id)
 		switch {
-		case val < 0:
-			fmt.Printf("Значение не может быть отрицательным, попробуйте ещё раз\n\n")
-		case math.IsNaN(val) || math.IsInf(val, 0):
-			fmt.Printf("Некорректный ввод (NaN/Infinity), попробуйте ещё раз\n\n")
+		case errors.Is(err, model.ErrNotFound):
+			fmt.Printf("Игра с таким id отсутствует, попробуйте ещё раз\n\n")
+		case err != nil:
+			return nil, fmt.Errorf("получить игру %d: %w", id, err)
 		default:
-			return val
+			return game, nil
 		}
 	}
 }
 
-func (h *Handler) getInt64Value(in string) int64 {
+func (h *Handler) askBaseGame(ctx context.Context) (*model.Game, error) {
 	for {
-		fmt.Printf("Введите %s игры: ", in)
-		ok := h.scanner.Scan()
-		if !ok {
-			fmt.Printf("Произошла ошибка, попробуйте ещё раз\n\n")
+		game, err := h.askGame(ctx, "id базовой игры")
+		if err != nil {
+			return nil, err
+		}
+
+		if game.Type != model.MainGameType {
+			fmt.Printf("Игра %q не является основной, выберите основную игру\n\n", game.Name)
 			continue
 		}
 
-		input := h.scanner.Text()
-		if input == "" {
+		return game, nil
+	}
+}
+
+func (h *Handler) scanLine() (string, error) {
+	if !h.scanner.Scan() {
+		if err := h.scanner.Err(); err != nil {
+			return "", fmt.Errorf("прочитать ввод: %w", err)
+		}
+
+		return "", ErrInputClosed
+	}
+
+	return strings.TrimSpace(h.scanner.Text()), nil
+}
+
+func (h *Handler) askString(label string) (string, error) {
+	for {
+		fmt.Printf("Введите %s игры: ", label)
+
+		val, err := h.scanLine()
+		if err != nil {
+			return "", err
+		}
+
+		if val == "" {
 			fmt.Printf("Пустой ввод, попробуйте ещё раз\n\n")
 			continue
 		}
 
-		val, err := strconv.ParseInt(input, 10, 64)
+		return val, nil
+	}
+}
+
+func (h *Handler) askInt64(label string) (int64, error) {
+	for {
+		fmt.Printf("Введите %s игры: ", label)
+
+		val, err := h.scanLine()
 		if err != nil {
-			fmt.Printf("Произошла ошибка конвертации, попробуйте ещё раз\n\n")
+			return 0, err
+		}
+
+		if val == "" {
+			fmt.Printf("Пустой ввод, попробуйте ещё раз\n\n")
 			continue
 		}
 
-		switch {
-		case val < 0:
-			fmt.Printf("Значение не может быть отрицательным, попробуйте ещё раз\n\n")
-		default:
-			return val
+		number, err := strconv.ParseInt(val, 10, 64)
+		if err != nil {
+			fmt.Printf("Некорректное число, попробуйте ещё раз\n\n")
+			continue
 		}
+
+		if number <= 0 {
+			fmt.Printf("Значение должно быть больше нуля, попробуйте ещё раз\n\n")
+			continue
+		}
+
+		return number, nil
 	}
+}
+
+func (h *Handler) askKopecks(label string) (int64, error) {
+	for {
+		fmt.Printf("Введите %s игры (например 5999 или 5999,99): ", label)
+
+		val, err := h.scanLine()
+		if err != nil {
+			return 0, err
+		}
+
+		kopecks, err := parseKopecks(val)
+		if err != nil {
+			fmt.Printf("%v, попробуйте ещё раз\n\n", err)
+			continue
+		}
+
+		return kopecks, nil
+	}
+}
+
+func parseKopecks(input string) (int64, error) {
+	normalized := strings.ReplaceAll(strings.TrimSpace(input), " ", "")
+	normalized = strings.ReplaceAll(normalized, ",", ".")
+
+	if normalized == "" {
+		return 0, errors.New("пустой ввод")
+	}
+
+	if dot := strings.IndexByte(normalized, '.'); dot >= 0 && len(normalized)-dot-1 > 2 {
+		return 0, errors.New("не больше двух знаков после запятой")
+	}
+
+	value, err := strconv.ParseFloat(normalized, 64)
+	if err != nil {
+		return 0, errors.New("некорректная сумма")
+	}
+
+	if math.IsNaN(value) || math.IsInf(value, 0) {
+		return 0, errors.New("некорректная сумма")
+	}
+
+	if value < 0 {
+		return 0, errors.New("стоимость не может быть отрицательной")
+	}
+
+	if value > maxKopecks/100 {
+		return 0, errors.New("слишком большая сумма")
+	}
+
+	return int64(math.Round(value * 100)), nil
 }

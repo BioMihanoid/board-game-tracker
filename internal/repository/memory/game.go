@@ -3,74 +3,102 @@ package memory
 import (
 	"context"
 	"fmt"
+	"sort"
 	"sync"
 
 	"board-game-tracker/internal/model"
 )
 
 type GameRepository struct {
-	m  map[int64]*model.Game
-	rw sync.RWMutex
+	m      map[int64]*model.Game
+	nextID int64
+	rw     sync.RWMutex
 }
 
 func NewGameRepository() *GameRepository {
+	m := seedGames()
+
+	nextID := int64(1)
+	for id := range m {
+		if id >= nextID {
+			nextID = id + 1
+		}
+	}
+
 	return &GameRepository{
-		m: gamesMap,
+		m:      m,
+		nextID: nextID,
 	}
 }
 
-func (gr *GameRepository) GetGameById(_ context.Context, id int64) (*model.Game, error) {
-	if val, ok := gr.m[id]; ok {
-		return val, nil
+func (gr *GameRepository) GetByID(_ context.Context, id int64) (*model.Game, error) {
+	gr.rw.RLock()
+	defer gr.rw.RUnlock()
+
+	game, ok := gr.m[id]
+	if !ok {
+		return nil, fmt.Errorf("get game by id %d: %w", id, model.ErrNotFound)
 	}
 
-	return nil, fmt.Errorf("GetGameById: game not exist")
+	// Отдаём копию, чтобы вызывающий не мог менять состояние репозитория в обход сервиса.
+	res := *game
+
+	return &res, nil
 }
 
-func (gr *GameRepository) GetAllGame(_ context.Context) (map[int64]*model.Game, error) {
-	res := make(map[int64]*model.Game, len(gr.m))
-	if gr.m != nil && len(gr.m) > 0 {
-		for _, v := range gr.m {
-			if v.Type == model.MainGameType {
-				res[v.ID] = v
-			}
+func (gr *GameRepository) ListBaseGames(_ context.Context) ([]*model.Game, error) {
+	gr.rw.RLock()
+	defer gr.rw.RUnlock()
+
+	return gr.filter(func(game *model.Game) bool {
+		return game.Type == model.MainGameType
+	}), nil
+}
+
+func (gr *GameRepository) ListExpansions(_ context.Context, baseID int64) ([]*model.Game, error) {
+	gr.rw.RLock()
+	defer gr.rw.RUnlock()
+
+	return gr.filter(func(game *model.Game) bool {
+		return game.BaseGameID == baseID && game.Type != model.MainGameType
+	}), nil
+}
+
+// filter вызывается под RLock, поэтому копирование делает он же.
+func (gr *GameRepository) filter(match func(*model.Game) bool) []*model.Game {
+	res := make([]*model.Game, 0, len(gr.m))
+	for _, game := range gr.m {
+		if !match(game) {
+			continue
 		}
 
-		return res, nil
+		copied := *game
+		res = append(res, &copied)
 	}
 
-	return nil, fmt.Errorf("GetAllGame: 0 games in db")
+	sort.Slice(res, func(i, j int) bool {
+		return res[i].ID < res[j].ID
+	})
+
+	return res
 }
 
-func (gr *GameRepository) GetAdditionalContentByGameBaseID(_ context.Context, id int64) (map[int64]*model.Game, error) {
-	res := make(map[int64]*model.Game, len(gr.m))
-	if gr.m != nil && len(gr.m) > 0 {
-		for _, v := range gr.m {
-			if v.Type == model.AdditionalContentGameType && v.ID == id {
-				return nil, fmt.Errorf("GetAdditionalContentByGameBaseId: id additional content game")
-			}
-
-			if v.Type == model.AdditionalContentGameType && v.BaseGameID == id {
-				res[v.ID] = v
-			}
-		}
-
-		if len(res) == 0 {
-			return nil, fmt.Errorf("GetAdditionalContentByGameBaseId: game additional content not exist")
-		}
-
-		return res, nil
+func (gr *GameRepository) Save(_ context.Context, game *model.Game) (int64, error) {
+	if game == nil {
+		return 0, fmt.Errorf("%w: пустая игра", model.ErrInvalidGame)
 	}
-
-	return nil, fmt.Errorf("GetAdditionalContentByGameBaseID: 0 games in db")
-}
-
-func (gr *GameRepository) SaveGame(ctx context.Context, game *model.Game) (int64, error) {
-	game.ID = int64(len(gr.m) + 1)
 
 	gr.rw.Lock()
-	gr.m[game.ID] = game
-	gr.rw.Unlock()
+	defer gr.rw.Unlock()
 
-	return game.ID, nil
+	id := gr.nextID
+	gr.nextID++
+
+	stored := *game
+	stored.ID = id
+	gr.m[id] = &stored
+
+	game.ID = id
+
+	return id, nil
 }
