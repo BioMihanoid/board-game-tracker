@@ -9,7 +9,8 @@ import (
 type GameRepository interface {
 	GetGameById(ctx context.Context, id int64) (*model.Game, error)
 	GetAllGame(ctx context.Context) (map[int64]*model.Game, error)
-	SaveGame(ctx context.Context, game *model.Game) error
+	SaveGame(ctx context.Context, game *model.Game) (int64, error)
+	GetAdditionalContentByGameBaseID(_ context.Context, id int64) (map[int64]*model.Game, error)
 }
 
 type GameService struct {
@@ -22,7 +23,7 @@ func NewGameService(repo GameRepository) *GameService {
 	}
 }
 
-func (gs *GameService) AddGame(ctx context.Context, game *model.Game) error {
+func (gs *GameService) AddGame(ctx context.Context, game *model.Game) (int64, error) {
 	return gs.repo.SaveGame(ctx, game)
 }
 
@@ -37,6 +38,15 @@ func (gs *GameService) GetGameById(ctx context.Context, id int64) (*model.Game, 
 
 func (gs *GameService) GetAllGame(ctx context.Context) (map[int64]*model.Game, error) {
 	games, err := gs.repo.GetAllGame(ctx)
+	if err != nil {
+		return nil, err
+	}
+
+	return games, nil
+}
+
+func (gs *GameService) GetAdditionalContentByGameBaseID(ctx context.Context, id int64) (map[int64]*model.Game, error) {
+	games, err := gs.repo.GetAdditionalContentByGameBaseID(ctx, id)
 	if err != nil {
 		return nil, err
 	}
