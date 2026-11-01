@@ -37,8 +37,8 @@ jobs:
       - name: Run go vet
         run: go vet ./...
 
-  test:
-    name: Unit tests
+  go-test:
+    name: Go test
     runs-on: ubuntu-latest
 
     steps:
@@ -52,8 +52,8 @@ jobs:
       - name: Run tests
         run: go test ./...
 
-  build:
-    name: Build
+  go-build:
+    name: Go build
     runs-on: ubuntu-latest
 
     steps:
@@ -68,7 +68,7 @@ jobs:
         run: go build ./...
 
   coverage-diff:
-    name: Changed code coverage
+    name: Coverage diff
     runs-on: ubuntu-latest
     needs: test
 
