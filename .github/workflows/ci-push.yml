@@ -68,7 +68,7 @@ jobs:
         run: go build ./...
 
   coverage-diff:
-    name: Coverage diff
+    name: Changed code coverage
     runs-on: ubuntu-latest
     needs: test
 
@@ -88,13 +88,20 @@ jobs:
       - name: Install gocovdiff
         run: go install github.com/vearutop/gocovdiff@latest
 
+      - name: Fetch main branch
+        run: git fetch origin main
+
       - name: Check changed code coverage
+        env:
+          BASE_SHA: origin/main
         run: |
+          git cat-file -e "${BASE_SHA}^{commit}"
+
           gocovdiff \
-            -parent "${{ github.event.pull_request.base.sha }}" \
+            -parent "$BASE_SHA" \
             -cov coverage.out \
             -delta-cov-file delta-coverage.txt \
-            -target-delta-cov 50 
+            -target-delta-cov 50
 
   coverage-full:
     name: Coverage full
