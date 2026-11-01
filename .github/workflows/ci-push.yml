@@ -16,29 +16,24 @@ concurrency:
 
 jobs:
   lint:
-    name: Lint
-    runs-on: ubuntu-latest
+    lint:
+      name: Lint
+      runs-on: ubuntu-latest
+      steps:
+        - uses: actions/checkout@v4
 
-    steps:
-      - uses: actions/checkout@v4
+        - uses: actions/setup-go@v5
+          with:
+            go-version-file: go.mod
+            cache: true
 
-      - uses: actions/setup-go@v5
-        with:
-          go-version-file: go.mod
-          cache: true
+        - name: Run golangci-lint
+          uses: golangci/golangci-lint-action@v6
+          with:
+            version: v1.61
 
-      - name: Check formatting
-        run: |
-          if [ -n "$(gofmt -l .)" ]; then
-            gofmt -l .
-            exit 1
-          fi
-
-      - name: Run go vet
-        run: go vet ./...
-
-  go-test:
-    name: Go test
+  test:
+    name: Test
     runs-on: ubuntu-latest
 
     steps:
@@ -52,8 +47,8 @@ jobs:
       - name: Run tests
         run: go test ./...
 
-  go-build:
-    name: Go build
+  build:
+    name: Build
     runs-on: ubuntu-latest
 
     steps:
@@ -66,6 +61,20 @@ jobs:
 
       - name: Build application
         run: go build ./...
+
+  security-scan:
+    name: Security scan
+    runs-on: ubuntu-latest
+    steps:
+      - uses: actions/checkout@v4
+
+      - uses: actions/setup-go@v5
+        with:
+          go-version-file: go.mod
+          cache: true
+
+      - name: Run govulncheck
+        run: go run golang.org/x/vuln/cmd/govulncheck@latest ./...
 
   coverage-diff:
     name: Coverage diff
