@@ -66,3 +66,28 @@ jobs:
 
       - name: Build application
         run: go build ./...
+
+  coverage-diff:
+    name: Coverage diff
+    runs-on: ubuntu-latest
+    needs: test
+
+    steps:
+      - uses: actions/checkout@v4
+        with:
+          fetch-depth: 0
+
+      - uses: actions/setup-go@v5
+        with:
+          go-version-file: go.mod
+          cache: true
+
+      - name: Run tests with coverage
+        run: go test -coverprofile=coverage.out ./...
+
+      - name: Install gocovdiff
+        run: go install github.com/vearutop/gocovdiff@latest
+
+      - name: Check changed code coverage
+        run: |
+          gocovdiff -cov coverage.out
