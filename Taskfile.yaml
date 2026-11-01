@@ -1,0 +1,94 @@
+version: '3'
+
+vars:
+  GOLANGCI_LINT_VERSION: 'v2.12.2'
+  GCI_VERSION: 'v0.14.0'
+  GOFUMPT_VERSION: 'v0.10.0'
+
+  BIN_DIR: '{{.ROOT_DIR}}/bin'
+  GOLANGCI_LINT: '{{.BIN_DIR}}/golangci-lint'
+  GCI: '{{.BIN_DIR}}/gci'
+  GOFUMPT: '{{.BIN_DIR}}/gofumpt'
+
+tasks:
+  formatters:install:
+    desc: "Устанавливает gofumpt и gci"
+    cmds:
+      - mkdir -p {{.BIN_DIR}}
+      - echo '📦 Устанавливаем gofumpt...'
+      - GOBIN={{.BIN_DIR}} go install mvdan.cc/gofumpt@{{.GOFUMPT_VERSION}}
+      - echo '📦 Устанавливаем gci...'
+      - GOBIN={{.BIN_DIR}} go install github.com/daixiang0/gci@{{.GCI_VERSION}}
+    status:
+      - test -x {{.GOFUMPT}}
+      - test -x {{.GCI}}
+
+  golangci-lint:install:
+    desc: "Устанавливает golangci-lint"
+    cmds:
+      - mkdir -p {{.BIN_DIR}}
+      - echo '📦 Устанавливаем golangci-lint...'
+      - GOBIN={{.BIN_DIR}} go install github.com/golangci/golangci-lint/v2/cmd/golangci-lint@{{.GOLANGCI_LINT_VERSION}}
+    status:
+      - test -x {{.GOLANGCI_LINT}}
+
+  setup:
+    desc: "Устанавливает инструменты разработки"
+    deps:
+      - formatters:install
+      - golangci-lint:install
+
+  format:
+    desc: "Форматирует Go-код"
+    deps:
+      - formatters:install
+    cmds:
+      - echo '🧹 Форматируем код через gofumpt...'
+      - find . -type f -name '*.go' -not -path './bin/*' -exec {{.GOFUMPT}} -extra -w {} +
+      - echo '📦 Сортируем импорты через gci...'
+      - find . -type f -name '*.go' -not -path './bin/*' -exec {{.GCI}} write -s standard -s default -s "prefix(board-game-tracker)" {} +
+
+  build:
+    desc: "Собирает приложение"
+    cmds:
+      - mkdir -p {{.BIN_DIR}}
+      - go build -o {{.BIN_DIR}}/board-game-tracker ./cmd/console
+
+  run:
+    desc: "Запускает консольное приложение"
+    cmds:
+      - go run ./cmd/console
+
+  test:
+    desc: "Запускает все тесты"
+    cmds:
+      - go test -v ./...
+
+  test:race:
+    desc: "Запускает тесты с race detector"
+    cmds:
+      - go test -race ./...
+
+  lint:
+    desc: "Запускает golangci-lint"
+    deps:
+      - golangci-lint:install
+    cmds:
+      - '{{.GOLANGCI_LINT}} run ./...'
+
+  check:
+    desc: "Проверяет форматирование, линтер и тесты"
+    cmds:
+      - task: format
+      - task: lint
+      - task: test
+
+  deps:update:
+    desc: "Обновляет Go-зависимости"
+    cmds:
+      - go mod tidy
+
+  clean:
+    desc: "Удаляет артефакты сборки"
+    cmds:
+      - rm -rf {{.BIN_DIR}}
