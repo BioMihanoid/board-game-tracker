@@ -28,41 +28,43 @@ func (gr *GameRepository) GetGameById(_ context.Context, id int64) (*model.Game,
 }
 
 func (gr *GameRepository) GetAllGame(_ context.Context) (map[int64]*model.Game, error) {
-	res := make(map[int64]*model.Game, len(gr.m))
-	if gr.m != nil && len(gr.m) > 0 {
-		for _, v := range gr.m {
-			if v.Type == model.MainGameType {
-				res[v.ID] = v
-			}
-		}
-
-		return res, nil
+	if gr == nil || len(gr.m) == 0 {
+		return nil, fmt.Errorf("GetAllGame: 0 games in db")
 	}
 
-	return nil, fmt.Errorf("GetAllGame: 0 games in db")
+	res := make(map[int64]*model.Game, len(gr.m))
+
+	for _, v := range gr.m {
+		if v.Type == model.MainGameType {
+			res[v.ID] = v
+		}
+	}
+
+	return res, nil
 }
 
 func (gr *GameRepository) GetAdditionalContentByGameBaseID(_ context.Context, id int64) (map[int64]*model.Game, error) {
-	res := make(map[int64]*model.Game, len(gr.m))
-	if gr.m != nil && len(gr.m) > 0 {
-		for _, v := range gr.m {
-			if v.Type == model.AdditionalContentGameType && v.ID == id {
-				return nil, fmt.Errorf("GetAdditionalContentByGameBaseId: id additional content game")
-			}
-
-			if v.Type == model.AdditionalContentGameType && v.BaseGameID == id {
-				res[v.ID] = v
-			}
-		}
-
-		if len(res) == 0 {
-			return nil, fmt.Errorf("GetAdditionalContentByGameBaseId: game additional content not exist")
-		}
-
-		return res, nil
+	if gr == nil || len(gr.m) == 0 {
+		return nil, fmt.Errorf("GetAdditionalContentByGameBaseID: 0 games in db")
 	}
 
-	return nil, fmt.Errorf("GetAdditionalContentByGameBaseID: 0 games in db")
+	res := make(map[int64]*model.Game, len(gr.m))
+
+	for _, v := range gr.m {
+		if v.Type == model.AdditionalContentGameType && v.ID == id {
+			return nil, fmt.Errorf("GetAdditionalContentByGameBaseId: id additional content game")
+		}
+
+		if v.Type == model.AdditionalContentGameType && v.BaseGameID == id {
+			res[v.ID] = v
+		}
+	}
+
+	if len(res) == 0 {
+		return nil, fmt.Errorf("GetAdditionalContentByGameBaseId: game additional content not exist")
+	}
+
+	return res, nil
 }
 
 func (gr *GameRepository) SaveGame(ctx context.Context, game *model.Game) (int64, error) {

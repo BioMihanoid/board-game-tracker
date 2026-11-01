@@ -47,7 +47,8 @@ func (h *Handler) PrintGameByID(ctx context.Context) {
 		break
 	}
 
-	fmt.Printf("\nИгра: %s\nТип: %s\nСтоимость: %0.2f\nИздатель: %s\n\n",
+	fmt.Printf(
+		"\nИгра: %s\nТип: %s\nСтоимость: %0.2f\nИздатель: %s\n\n",
 		game.Name,
 		game.Type,
 		game.Cost,
@@ -63,7 +64,8 @@ func (h *Handler) PrintAllGames(ctx context.Context) {
 	}
 
 	for _, game := range games {
-		fmt.Printf("ID: %d\nИгра: %s\nТип: %s\nСтоимость: %0.2f\nИздатель: %s\n\n",
+		fmt.Printf(
+			"ID: %d\nИгра: %s\nТип: %s\nСтоимость: %0.2f\nИздатель: %s\n\n",
 			game.ID,
 			game.Name,
 			game.Type,
@@ -93,7 +95,8 @@ func (h *Handler) PrintAllAdditionalContentByGameID(ctx context.Context) {
 	}
 
 	for _, game := range games {
-		fmt.Printf("Название: %s\nСтоимость: %0.2f\nИздатель: %s\n\n",
+		fmt.Printf(
+			"Название: %s\nСтоимость: %0.2f\nИздатель: %s\n\n",
 			game.Name,
 			game.Cost,
 			game.Publisher,
