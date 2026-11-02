@@ -17,7 +17,6 @@ jobs:
   lint:
     name: Lint
     runs-on: ubuntu-latest
-
     steps:
       - uses: actions/checkout@v4
 
@@ -26,18 +25,13 @@ jobs:
           go-version-file: go.mod
           cache: true
 
-      - name: Check formatting
-        run: |
-          if [ -n "$(gofmt -l .)" ]; then
-            gofmt -l .
-            exit 1
-          fi
-
-      - name: Run go vet
-        run: go vet ./...
+      - name: Run golangci-lint
+        uses: golangci/golangci-lint-action@v7
+        with:
+          version: v2.13.1
 
   test:
-    name: Unit tests
+    name: Test
     runs-on: ubuntu-latest
 
     steps:
@@ -66,9 +60,91 @@ jobs:
       - name: Build application
         run: go build ./...
 
-  race-tests:
-    name: Race tests
+  security-scan:
+    name: Security scan
     runs-on: ubuntu-latest
+    steps:
+      - uses: actions/checkout@v4
+
+      - uses: actions/setup-go@v5
+        with:
+          go-version-file: go.mod
+          cache: true
+
+      - name: Run govulncheck
+        run: go run golang.org/x/vuln/cmd/govulncheck@latest ./...
+
+  coverage-diff:
+    name: Coverage diff
+    runs-on: ubuntu-latest
+    needs: test
+
+    steps:
+      - uses: actions/checkout@v4
+        with:
+          fetch-depth: 0
+
+      - uses: actions/setup-go@v5
+        with:
+          go-version-file: go.mod
+          cache: true
+
+      - name: Run tests with coverage
+        run: go test -coverpkg=./... -coverprofile=coverage.out ./...
+
+      - name: Install gocovdiff
+        run: go install github.com/vearutop/gocovdiff@latest
+
+      - name: Fetch main branch
+        run: git fetch origin main
+
+      - name: Check changed code coverage
+        env:
+          BASE_SHA: ${{ github.event.pull_request.base.sha }}
+        run: |
+          git cat-file -e "${BASE_SHA}^{commit}"
+
+          gocovdiff \
+            -parent "$BASE_SHA" \
+            -cov coverage.out \
+            -delta-cov-file delta-coverage.txt \
+            -target-delta-cov 50
+
+  coverage-full:
+    name: Coverage full
+    runs-on: ubuntu-latest
+    needs: test
+
+    steps:
+      - uses: actions/checkout@v4
+
+      - uses: actions/setup-go@v5
+        with:
+          go-version-file: go.mod
+          cache: true
+
+      - name: Run tests with coverage
+        run: go test -coverpkg=./... -coverprofile=coverage.out ./...
+
+      - name: Check total coverage
+        run: |
+          go tool cover -func=coverage.out
+
+          TOTAL=$(go tool cover -func=coverage.out | grep '^total:' | awk '{print $3}' | sed 's/%//')
+
+          echo "Total coverage: ${TOTAL}%"
+
+          if awk "BEGIN { exit !($TOTAL < 0) }"; then
+            echo "Coverage is below 0%"
+            exit 1
+          fi
+
+          echo "Coverage threshold passed"
+
+  test-race:
+    name: Test race
+    runs-on: ubuntu-latest
+    needs: test
 
     steps:
       - uses: actions/checkout@v4
@@ -80,3 +156,32 @@ jobs:
 
       - name: Run race detector
         run: go test -race ./...
+
+  go-mod-tidy:
+    name: Go mod tidy
+    runs-on: ubuntu-latest
+    steps:
+      - uses: actions/checkout@v4
+
+      - uses: actions/setup-go@v5
+        with:
+          go-version-file: go.mod
+          cache: true
+
+      - name: Check go.mod and go.sum
+        run: |
+          go mod tidy
+          git diff --exit-code -- go.mod go.sum
+
+  secrets-scan:
+    name: Secrets Scan
+    runs-on: ubuntu-latest
+    steps:
+      - uses: actions/checkout@v4
+        with:
+          fetch-depth: 0
+
+      - name: Gitleaks Scan
+        uses: gitleaks/gitleaks-action@v2
+        env:
+          GITHUB_TOKEN: ${{ secrets.GITHUB_TOKEN }}
