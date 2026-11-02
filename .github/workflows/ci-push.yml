@@ -162,9 +162,6 @@ jobs:
         with:
           name: coverage-report
 
-      - name: Run tests with coverage
-        run: go test -coverpkg=./... -coverprofile=coverage.out ./...
-
       - name: Install gocovdiff
         run: go install github.com/vearutop/gocovdiff@latest
 
