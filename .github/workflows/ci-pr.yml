@@ -46,7 +46,12 @@ jobs:
       - name: Run tests with coverage
         shell: bash
         run: |
-          PACKAGES=$(go list ./... | grep -v '/(mocks|main.go)$' | paste -sd, -)
+          PACKAGES=$(go list ./... \
+            | grep -vE '/mocks$|/cmd/cli$' \
+            | paste -sd, -)
+
+          echo "Packages included in coverage:"
+          echo "$PACKAGES" | tr ',' '\n'
 
           go test \
             -coverpkg="$PACKAGES" \
