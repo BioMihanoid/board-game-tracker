@@ -119,7 +119,7 @@ jobs:
             -parent "$BASE_SHA" \
             -cov coverage.out \
             -delta-cov-file delta-coverage.txt \
-            -target-delta-cov 50
+            -target-delta-cov 70
 
   coverage-full:
     name: Coverage full
@@ -146,8 +146,8 @@ jobs:
 
           echo "Total coverage: ${TOTAL}%"
 
-          if awk "BEGIN { exit !($TOTAL < 0) }"; then
-            echo "Coverage is below 0%"
+          if awk "BEGIN { exit !($TOTAL < 70) }"; then
+            echo "Coverage is below 70%"
             exit 1
           fi
 

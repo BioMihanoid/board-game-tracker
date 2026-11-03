@@ -4,11 +4,13 @@ vars:
   GOLANGCI_LINT_VERSION: 'v2.12.2'
   GCI_VERSION: 'v0.14.0'
   GOFUMPT_VERSION: 'v0.10.0'
+  MOCKERY_VERSION: 'v3.8.1'
 
   BIN_DIR: '{{.ROOT_DIR}}/bin'
   GOLANGCI_LINT: '{{.BIN_DIR}}/golangci-lint'
   GCI: '{{.BIN_DIR}}/gci'
   GOFUMPT: '{{.BIN_DIR}}/gofumpt'
+  MOCKERY: '{{.BIN_DIR}}/mockery'
 
 tasks:
   formatters:install:
@@ -37,6 +39,7 @@ tasks:
     deps:
       - formatters:install
       - golangci-lint:install
+      - mockery:install
 
   format:
     desc: "Форматирует Go-код"
@@ -52,12 +55,12 @@ tasks:
     desc: "Собирает приложение"
     cmds:
       - mkdir -p {{.BIN_DIR}}
-      - go build -o {{.BIN_DIR}}/board-game-tracker ./cmd/console
+      - go build -o {{.BIN_DIR}}/board-game-tracker ./cmd/cli
 
   run:
     desc: "Запускает консольное приложение"
     cmds:
-      - go run ./cmd/console
+      - go run ./cmd/cli
 
   test:
     desc: "Запускает все тесты"
@@ -92,3 +95,19 @@ tasks:
     desc: "Удаляет артефакты сборки"
     cmds:
       - rm -rf {{.BIN_DIR}}
+
+  mockery:install:
+    desc: "Устанавливает Mockery"
+    cmds:
+      - mkdir -p {{.BIN_DIR}}
+      - echo '📦 Устанавливаем Mockery...'
+      - GOBIN={{.BIN_DIR}} go install github.com/vektra/mockery/v3@{{.MOCKERY_VERSION}}
+    status:
+      - test -x {{.MOCKERY}}
+
+  mocks:
+    desc: "Генерирует моки интерфейсов"
+    deps:
+      - mockery:install
+    cmds:
+      - '{{.MOCKERY}}'
