@@ -5,11 +5,10 @@
 package mocks
 
 import (
+	"board-game-tracker/internal/models"
 	"context"
 
 	mock "github.com/stretchr/testify/mock"
-
-	"board-game-tracker/internal/models"
 )
 
 // NewMockGameRepository creates a new instance of MockGameRepository. It also registers a testing interface on the mock and a cleanup function to assert the mocks expectations.
@@ -17,8 +16,7 @@ import (
 func NewMockGameRepository(t interface {
 	mock.TestingT
 	Cleanup(func())
-},
-) *MockGameRepository {
+}) *MockGameRepository {
 	if helper, ok := t.(interface{ Helper() }); ok {
 		helper.Helper()
 	}
@@ -85,7 +83,7 @@ type MockGameRepository_GetAdditionalContentByGameBaseID_Call struct {
 // GetAdditionalContentByGameBaseID is a helper method to define mock.On call
 //   - ctx context.Context
 //   - id int64
-func (_e *MockGameRepository_Expecter) GetAdditionalContentByGameBaseID(ctx, id any) *MockGameRepository_GetAdditionalContentByGameBaseID_Call {
+func (_e *MockGameRepository_Expecter) GetAdditionalContentByGameBaseID(ctx any, id any) *MockGameRepository_GetAdditionalContentByGameBaseID_Call {
 	return &MockGameRepository_GetAdditionalContentByGameBaseID_Call{Call: _e.mock.On("GetAdditionalContentByGameBaseID", ctx, id)}
 }
 
@@ -215,7 +213,7 @@ type MockGameRepository_GetGameById_Call struct {
 // GetGameById is a helper method to define mock.On call
 //   - ctx context.Context
 //   - id int64
-func (_e *MockGameRepository_Expecter) GetGameById(ctx, id any) *MockGameRepository_GetGameById_Call {
+func (_e *MockGameRepository_Expecter) GetGameById(ctx any, id any) *MockGameRepository_GetGameById_Call {
 	return &MockGameRepository_GetGameById_Call{Call: _e.mock.On("GetGameById", ctx, id)}
 }
 
@@ -281,7 +279,7 @@ type MockGameRepository_SaveGame_Call struct {
 // SaveGame is a helper method to define mock.On call
 //   - ctx context.Context
 //   - game *models.Game
-func (_e *MockGameRepository_Expecter) SaveGame(ctx, game any) *MockGameRepository_SaveGame_Call {
+func (_e *MockGameRepository_Expecter) SaveGame(ctx any, game any) *MockGameRepository_SaveGame_Call {
 	return &MockGameRepository_SaveGame_Call{Call: _e.mock.On("SaveGame", ctx, game)}
 }
 
