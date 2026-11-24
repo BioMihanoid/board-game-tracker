@@ -1,4 +1,4 @@
-package console
+package cli
 
 import (
 	"bufio"
@@ -8,14 +8,14 @@ import (
 	"strconv"
 	"strings"
 
-	"board-game-tracker/internal/model"
+	"board-game-tracker/internal/models"
 )
 
 type GameService interface {
-	GetGameById(ctx context.Context, id int64) (*model.Game, error)
-	GetAllGame(ctx context.Context) (map[int64]*model.Game, error)
-	AddGame(ctx context.Context, game *model.Game) (int64, error)
-	GetAdditionalContentByGameBaseID(ctx context.Context, id int64) (map[int64]*model.Game, error)
+	GetGameById(ctx context.Context, id int64) (*models.Game, error)
+	GetAllGame(ctx context.Context) (map[int64]*models.Game, error)
+	AddGame(ctx context.Context, game *models.Game) (int64, error)
+	GetAdditionalContentByGameBaseID(ctx context.Context, id int64) (map[int64]*models.Game, error)
 }
 
 type Handler struct {
@@ -33,7 +33,7 @@ func NewHandler(gameService GameService, scanner *bufio.Scanner) *Handler {
 func (h *Handler) PrintGameByID(ctx context.Context) {
 	var (
 		id   int64
-		game *model.Game
+		game *models.Game
 		err  error
 	)
 	for {
@@ -105,12 +105,12 @@ func (h *Handler) PrintAllAdditionalContentByGameID(ctx context.Context) {
 }
 
 func (h *Handler) AddGame(ctx context.Context) (int64, error) {
-	game := &model.Game{}
+	game := &models.Game{}
 
 	game.Type = h.getGameType()
 
-	if game.Type == model.AdditionalContentGameType || game.Type == model.PromoGameType {
-		var baseGame *model.Game
+	if game.Type == models.AdditionalContentGameType || game.Type == models.PromoGameType {
+		var baseGame *models.Game
 		for {
 			baseGame, err := h.gameService.GetGameById(ctx, h.getInt64Value("id базовой игры"))
 			if err != nil {
@@ -123,7 +123,7 @@ func (h *Handler) AddGame(ctx context.Context) (int64, error) {
 		}
 
 		tag := "дополнения"
-		if game.Type == model.PromoGameType {
+		if game.Type == models.PromoGameType {
 			tag = "промо набора"
 		}
 
@@ -141,22 +141,22 @@ func (h *Handler) AddGame(ctx context.Context) (int64, error) {
 	return h.gameService.AddGame(ctx, game)
 }
 
-func (h *Handler) getGameType() model.GameType {
+func (h *Handler) getGameType() models.GameType {
 	for {
 		fmt.Printf(
 			"Доступные типы игры:\n1. %s\n2. %s\n3. %s\n",
-			model.MainGameType,
-			model.AdditionalContentGameType,
-			model.PromoGameType,
+			models.MainGameType,
+			models.AdditionalContentGameType,
+			models.PromoGameType,
 		)
 		choice := h.getInt64Value("тип")
 		switch choice {
 		case 1:
-			return model.MainGameType
+			return models.MainGameType
 		case 2:
-			return model.AdditionalContentGameType
+			return models.AdditionalContentGameType
 		case 3:
-			return model.PromoGameType
+			return models.PromoGameType
 		default:
 			fmt.Printf("Выбран не существующий тип игры, попробуйте ещё раз\n\n")
 		}

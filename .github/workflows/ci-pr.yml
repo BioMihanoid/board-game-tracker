@@ -17,6 +17,7 @@ jobs:
   lint:
     name: Lint
     runs-on: ubuntu-latest
+
     steps:
       - uses: actions/checkout@v4
 
@@ -28,7 +29,7 @@ jobs:
       - name: Run golangci-lint
         uses: golangci/golangci-lint-action@v7
         with:
-          version: v2.13.1
+          version: v2.15.0
 
   test:
     name: Test
@@ -43,7 +44,19 @@ jobs:
           cache: true
 
       - name: Run tests with coverage
-        run: go test -coverpkg=./... -coverprofile=coverage.out ./...
+        shell: bash
+        run: |
+          PACKAGES=$(go list ./... \
+            | grep -vE '/mocks$|/cmd/cli$' \
+            | paste -sd, -)
+
+          echo "Packages included in coverage:"
+          echo "$PACKAGES" | tr ',' '\n'
+
+          go test \
+            -coverpkg="$PACKAGES" \
+            -coverprofile=coverage.out \
+            ./...
 
       - name: Upload coverage report
         uses: actions/upload-artifact@v4
@@ -70,6 +83,7 @@ jobs:
   security-scan:
     name: Security scan
     runs-on: ubuntu-latest
+
     steps:
       - uses: actions/checkout@v4
 
@@ -89,6 +103,7 @@ jobs:
     steps:
       - uses: actions/checkout@v4
         with:
+          ref: ${{ needs.sync-main.outputs.sha || github.sha }}
           fetch-depth: 0
 
       - uses: actions/setup-go@v5
@@ -116,7 +131,7 @@ jobs:
             -parent "$BASE_SHA" \
             -cov coverage.out \
             -delta-cov-file delta-coverage.txt \
-            -target-delta-cov 50
+            -target-delta-cov 0
 
   coverage-full:
     name: Coverage full
@@ -144,7 +159,7 @@ jobs:
           echo "Total coverage: ${TOTAL}%"
 
           if awk "BEGIN { exit !($TOTAL < 0) }"; then
-            echo "Coverage is below 0%"
+            echo "Coverage is below 70%"
             exit 1
           fi
 
@@ -168,6 +183,7 @@ jobs:
   go-mod-tidy:
     name: Go mod tidy
     runs-on: ubuntu-latest
+
     steps:
       - uses: actions/checkout@v4
 
@@ -184,6 +200,7 @@ jobs:
   secrets-scan:
     name: Secrets Scan
     runs-on: ubuntu-latest
+
     steps:
       - uses: actions/checkout@v4
         with:

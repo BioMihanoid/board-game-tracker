@@ -6,9 +6,9 @@ import (
 	"fmt"
 	"os"
 
-	consolehandler "board-game-tracker/internal/handler/console"
-	mapdb "board-game-tracker/internal/repository/memory"
-	"board-game-tracker/internal/service"
+	consolehandler "board-game-tracker/internal/game/handler/cli"
+	mapdb "board-game-tracker/internal/game/repository/memory"
+	gameservice "board-game-tracker/internal/game/service"
 )
 
 func main() {
@@ -16,7 +16,7 @@ func main() {
 
 	gameRepo := mapdb.NewGameRepository()
 
-	gameService := service.NewGameService(gameRepo)
+	gameService := gameservice.NewGameService(gameRepo)
 
 	scanner := bufio.NewScanner(os.Stdin)
 

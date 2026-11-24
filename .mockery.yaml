@@ -1,0 +1,20 @@
+template: testify
+
+packages:
+  board-game-tracker/internal/game/service:
+    config:
+      dir: "{{.InterfaceDir}}/mocks"
+      pkgname: mocks
+      filename: "game_repository_mock.go"
+      structname: "{{.Mock}}{{.InterfaceName}}"
+    interfaces:
+      GameRepository:
+
+  board-game-tracker/internal/game/handler/cli:
+    config:
+      dir: "{{.InterfaceDir}}/mocks"
+      pkgname: mocks
+      filename: "game_service_mock.go"
+      structname: "{{.Mock}}{{.InterfaceName}}"
+    interfaces:
+      GameService:
