@@ -6,9 +6,9 @@ import (
 	"fmt"
 	"os"
 
-	consolehandler "board-game-tracker/internal/game/handler/cli"
-	mapdb "board-game-tracker/internal/game/repository/memory"
-	gameservice "board-game-tracker/internal/game/service"
+	consolehandler "board-game-tracker/internal/handler/cli"
+	mapdb "board-game-tracker/internal/repository/memory"
+	gameservice "board-game-tracker/internal/service"
 )
 
 func main() {

@@ -1,7 +1,7 @@
 template: testify
 
 packages:
-  board-game-tracker/internal/game/service:
+  board-game-tracker/internal/service:
     config:
       dir: "{{.InterfaceDir}}/mocks"
       pkgname: mocks
@@ -10,7 +10,7 @@ packages:
     interfaces:
       GameRepository:
 
-  board-game-tracker/internal/game/handler/cli:
+  board-game-tracker/internal/handler/cli:
     config:
       dir: "{{.InterfaceDir}}/mocks"
       pkgname: mocks

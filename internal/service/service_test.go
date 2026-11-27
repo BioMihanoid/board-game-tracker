@@ -5,8 +5,8 @@ import (
 	"fmt"
 	"testing"
 
-	"board-game-tracker/internal/game/service/mocks"
 	"board-game-tracker/internal/models"
+	"board-game-tracker/internal/service/mocks"
 	"github.com/stretchr/testify/assert"
 )
 

@@ -5,8 +5,9 @@
 package mocks
 
 import (
-	"board-game-tracker/internal/models"
 	"context"
+
+	"board-game-tracker/internal/models"
 
 	mock "github.com/stretchr/testify/mock"
 )
