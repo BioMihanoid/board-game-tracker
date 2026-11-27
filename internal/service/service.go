@@ -11,6 +11,8 @@ type GameRepository interface {
 	GetAllGame(ctx context.Context) (map[int64]*models.Game, error)
 	SaveGame(ctx context.Context, game *models.Game) (int64, error)
 	GetAdditionalContentByGameBaseID(ctx context.Context, id int64) (map[int64]*models.Game, error)
+	UpdateGame(ctx context.Context, game *models.Game) (*models.Game, error)
+	DeleteGame(ctx context.Context, id int64) error
 }
 
 type GameService struct {
@@ -52,4 +54,12 @@ func (gs *GameService) GetAdditionalContentByGameBaseID(ctx context.Context, id 
 	}
 
 	return games, nil
+}
+
+func (gs *GameService) UpdateGame(ctx context.Context, game *models.Game) (*models.Game, error) {
+	return gs.repo.UpdateGame(ctx, game)
+}
+
+func (gs *GameService) DeleteGame(ctx context.Context, id int64) error {
+	return gs.repo.DeleteGame(ctx, id)
 }

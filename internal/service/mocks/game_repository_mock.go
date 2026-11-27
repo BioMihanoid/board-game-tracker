@@ -7,9 +7,9 @@ package mocks
 import (
 	"context"
 
-	"board-game-tracker/internal/models"
-
 	mock "github.com/stretchr/testify/mock"
+
+	"board-game-tracker/internal/models"
 )
 
 // NewMockGameRepository creates a new instance of MockGameRepository. It also registers a testing interface on the mock and a cleanup function to assert the mocks expectations.
@@ -17,7 +17,8 @@ import (
 func NewMockGameRepository(t interface {
 	mock.TestingT
 	Cleanup(func())
-}) *MockGameRepository {
+},
+) *MockGameRepository {
 	if helper, ok := t.(interface{ Helper() }); ok {
 		helper.Helper()
 	}
@@ -46,6 +47,63 @@ type MockGameRepository_Expecter struct {
 
 func (_m *MockGameRepository) EXPECT() *MockGameRepository_Expecter {
 	return &MockGameRepository_Expecter{mock: &_m.Mock}
+}
+
+// DeleteGame provides a mock function for the type MockGameRepository
+func (_mock *MockGameRepository) DeleteGame(ctx context.Context, id int64) error {
+	ret := _mock.Called(ctx, id)
+
+	if len(ret) == 0 {
+		panic("no return value specified for DeleteGame")
+	}
+
+	var r0 error
+	if returnFunc, ok := ret.Get(0).(func(context.Context, int64) error); ok {
+		r0 = returnFunc(ctx, id)
+	} else {
+		r0 = ret.Error(0)
+	}
+	return r0
+}
+
+// MockGameRepository_DeleteGame_Call is a *mock.Call that shadows Run/Return methods with type explicit version for method 'DeleteGame'
+type MockGameRepository_DeleteGame_Call struct {
+	*mock.Call
+}
+
+// DeleteGame is a helper method to define mock.On call
+//   - ctx context.Context
+//   - id int64
+func (_e *MockGameRepository_Expecter) DeleteGame(ctx, id any) *MockGameRepository_DeleteGame_Call {
+	return &MockGameRepository_DeleteGame_Call{Call: _e.mock.On("DeleteGame", ctx, id)}
+}
+
+func (_c *MockGameRepository_DeleteGame_Call) Run(run func(ctx context.Context, id int64)) *MockGameRepository_DeleteGame_Call {
+	_c.Call.Run(func(args mock.Arguments) {
+		var arg0 context.Context
+		if args[0] != nil {
+			arg0 = args[0].(context.Context)
+		}
+		var arg1 int64
+		if args[1] != nil {
+			arg1 = args[1].(int64)
+		}
+		run(
+			arg0,
+			arg1,
+		)
+	})
+	return _c
+}
+
+func (_c *MockGameRepository_DeleteGame_Call) Return(err error) *MockGameRepository_DeleteGame_Call {
+	_c.Call.Return(err)
+	return _c
+}
+
+func (_c *MockGameRepository_DeleteGame_Call) RunAndReturn(run func(ctx context.Context, id int64) error) *MockGameRepository_DeleteGame_Call {
+	_c.Call.Return(run)
+	return _c
 }
 
 // GetAdditionalContentByGameBaseID provides a mock function for the type MockGameRepository
@@ -84,7 +142,7 @@ type MockGameRepository_GetAdditionalContentByGameBaseID_Call struct {
 // GetAdditionalContentByGameBaseID is a helper method to define mock.On call
 //   - ctx context.Context
 //   - id int64
-func (_e *MockGameRepository_Expecter) GetAdditionalContentByGameBaseID(ctx any, id any) *MockGameRepository_GetAdditionalContentByGameBaseID_Call {
+func (_e *MockGameRepository_Expecter) GetAdditionalContentByGameBaseID(ctx, id any) *MockGameRepository_GetAdditionalContentByGameBaseID_Call {
 	return &MockGameRepository_GetAdditionalContentByGameBaseID_Call{Call: _e.mock.On("GetAdditionalContentByGameBaseID", ctx, id)}
 }
 
@@ -214,7 +272,7 @@ type MockGameRepository_GetGameById_Call struct {
 // GetGameById is a helper method to define mock.On call
 //   - ctx context.Context
 //   - id int64
-func (_e *MockGameRepository_Expecter) GetGameById(ctx any, id any) *MockGameRepository_GetGameById_Call {
+func (_e *MockGameRepository_Expecter) GetGameById(ctx, id any) *MockGameRepository_GetGameById_Call {
 	return &MockGameRepository_GetGameById_Call{Call: _e.mock.On("GetGameById", ctx, id)}
 }
 
@@ -280,7 +338,7 @@ type MockGameRepository_SaveGame_Call struct {
 // SaveGame is a helper method to define mock.On call
 //   - ctx context.Context
 //   - game *models.Game
-func (_e *MockGameRepository_Expecter) SaveGame(ctx any, game any) *MockGameRepository_SaveGame_Call {
+func (_e *MockGameRepository_Expecter) SaveGame(ctx, game any) *MockGameRepository_SaveGame_Call {
 	return &MockGameRepository_SaveGame_Call{Call: _e.mock.On("SaveGame", ctx, game)}
 }
 
@@ -308,6 +366,74 @@ func (_c *MockGameRepository_SaveGame_Call) Return(n int64, err error) *MockGame
 }
 
 func (_c *MockGameRepository_SaveGame_Call) RunAndReturn(run func(ctx context.Context, game *models.Game) (int64, error)) *MockGameRepository_SaveGame_Call {
+	_c.Call.Return(run)
+	return _c
+}
+
+// UpdateGame provides a mock function for the type MockGameRepository
+func (_mock *MockGameRepository) UpdateGame(ctx context.Context, game *models.Game) (*models.Game, error) {
+	ret := _mock.Called(ctx, game)
+
+	if len(ret) == 0 {
+		panic("no return value specified for UpdateGame")
+	}
+
+	var r0 *models.Game
+	var r1 error
+	if returnFunc, ok := ret.Get(0).(func(context.Context, *models.Game) (*models.Game, error)); ok {
+		return returnFunc(ctx, game)
+	}
+	if returnFunc, ok := ret.Get(0).(func(context.Context, *models.Game) *models.Game); ok {
+		r0 = returnFunc(ctx, game)
+	} else {
+		if ret.Get(0) != nil {
+			r0 = ret.Get(0).(*models.Game)
+		}
+	}
+	if returnFunc, ok := ret.Get(1).(func(context.Context, *models.Game) error); ok {
+		r1 = returnFunc(ctx, game)
+	} else {
+		r1 = ret.Error(1)
+	}
+	return r0, r1
+}
+
+// MockGameRepository_UpdateGame_Call is a *mock.Call that shadows Run/Return methods with type explicit version for method 'UpdateGame'
+type MockGameRepository_UpdateGame_Call struct {
+	*mock.Call
+}
+
+// UpdateGame is a helper method to define mock.On call
+//   - ctx context.Context
+//   - game *models.Game
+func (_e *MockGameRepository_Expecter) UpdateGame(ctx, game any) *MockGameRepository_UpdateGame_Call {
+	return &MockGameRepository_UpdateGame_Call{Call: _e.mock.On("UpdateGame", ctx, game)}
+}
+
+func (_c *MockGameRepository_UpdateGame_Call) Run(run func(ctx context.Context, game *models.Game)) *MockGameRepository_UpdateGame_Call {
+	_c.Call.Run(func(args mock.Arguments) {
+		var arg0 context.Context
+		if args[0] != nil {
+			arg0 = args[0].(context.Context)
+		}
+		var arg1 *models.Game
+		if args[1] != nil {
+			arg1 = args[1].(*models.Game)
+		}
+		run(
+			arg0,
+			arg1,
+		)
+	})
+	return _c
+}
+
+func (_c *MockGameRepository_UpdateGame_Call) Return(game1 *models.Game, err error) *MockGameRepository_UpdateGame_Call {
+	_c.Call.Return(game1, err)
+	return _c
+}
+
+func (_c *MockGameRepository_UpdateGame_Call) RunAndReturn(run func(ctx context.Context, game *models.Game) (*models.Game, error)) *MockGameRepository_UpdateGame_Call {
 	_c.Call.Return(run)
 	return _c
 }

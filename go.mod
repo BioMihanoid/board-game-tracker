@@ -2,7 +2,10 @@ module board-game-tracker
 
 go 1.27.4
 
-require github.com/stretchr/testify v1.12.1
+require (
+	github.com/go-chi/chi/v5 v5.5.0
+	github.com/stretchr/testify v1.12.1
+)
 
 require (
 	github.com/stretchr/objx v0.5.3 // indirect

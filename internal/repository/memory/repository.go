@@ -76,3 +76,29 @@ func (gr *GameRepository) SaveGame(ctx context.Context, game *models.Game) (int6
 
 	return game.ID, nil
 }
+
+func (gr *GameRepository) UpdateGame(ctx context.Context, game *models.Game) (*models.Game, error) {
+	updateGame, err := gr.GetGameById(ctx, game.ID)
+	if err != nil {
+		return nil, err
+	}
+
+	gr.rw.Lock()
+
+	updateGame.Name = game.Name
+	updateGame.Publisher = game.Publisher
+
+	gr.m[game.ID] = game
+
+	gr.rw.Unlock()
+
+	return game, nil
+}
+
+func (gr *GameRepository) DeleteGame(ctx context.Context, id int64) error {
+	gr.rw.Lock()
+	delete(gr.m, id)
+	gr.rw.Unlock()
+
+	return nil
+}

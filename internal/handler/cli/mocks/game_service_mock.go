@@ -7,9 +7,9 @@ package mocks
 import (
 	"context"
 
-	"board-game-tracker/internal/models"
-
 	mock "github.com/stretchr/testify/mock"
+
+	"board-game-tracker/internal/models"
 )
 
 // NewMockGameService creates a new instance of MockGameService. It also registers a testing interface on the mock and a cleanup function to assert the mocks expectations.
@@ -17,7 +17,8 @@ import (
 func NewMockGameService(t interface {
 	mock.TestingT
 	Cleanup(func())
-}) *MockGameService {
+},
+) *MockGameService {
 	if helper, ok := t.(interface{ Helper() }); ok {
 		helper.Helper()
 	}
@@ -82,7 +83,7 @@ type MockGameService_AddGame_Call struct {
 // AddGame is a helper method to define mock.On call
 //   - ctx context.Context
 //   - game *models.Game
-func (_e *MockGameService_Expecter) AddGame(ctx any, game any) *MockGameService_AddGame_Call {
+func (_e *MockGameService_Expecter) AddGame(ctx, game any) *MockGameService_AddGame_Call {
 	return &MockGameService_AddGame_Call{Call: _e.mock.On("AddGame", ctx, game)}
 }
 
@@ -150,7 +151,7 @@ type MockGameService_GetAdditionalContentByGameBaseID_Call struct {
 // GetAdditionalContentByGameBaseID is a helper method to define mock.On call
 //   - ctx context.Context
 //   - id int64
-func (_e *MockGameService_Expecter) GetAdditionalContentByGameBaseID(ctx any, id any) *MockGameService_GetAdditionalContentByGameBaseID_Call {
+func (_e *MockGameService_Expecter) GetAdditionalContentByGameBaseID(ctx, id any) *MockGameService_GetAdditionalContentByGameBaseID_Call {
 	return &MockGameService_GetAdditionalContentByGameBaseID_Call{Call: _e.mock.On("GetAdditionalContentByGameBaseID", ctx, id)}
 }
 
@@ -280,7 +281,7 @@ type MockGameService_GetGameById_Call struct {
 // GetGameById is a helper method to define mock.On call
 //   - ctx context.Context
 //   - id int64
-func (_e *MockGameService_Expecter) GetGameById(ctx any, id any) *MockGameService_GetGameById_Call {
+func (_e *MockGameService_Expecter) GetGameById(ctx, id any) *MockGameService_GetGameById_Call {
 	return &MockGameService_GetGameById_Call{Call: _e.mock.On("GetGameById", ctx, id)}
 }
 

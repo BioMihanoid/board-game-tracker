@@ -5,9 +5,10 @@ import (
 	"fmt"
 	"testing"
 
+	"github.com/stretchr/testify/assert"
+
 	"board-game-tracker/internal/models"
 	"board-game-tracker/internal/service/mocks"
-	"github.com/stretchr/testify/assert"
 )
 
 func TestNewGameService(t *testing.T) {
