@@ -3,7 +3,6 @@ package api
 import (
 	"context"
 	"net/http"
-	"strconv"
 
 	"github.com/go-chi/chi/v5"
 
@@ -11,11 +10,11 @@ import (
 )
 
 type GameService interface {
-	AddGame(ctx context.Context, game *models.Game) (int64, error)
-	GetGameById(ctx context.Context, id int64) (*models.Game, error)
+	AddGame(ctx context.Context, game *models.Game) (string, error)
+	GetGameById(ctx context.Context, id string) (*models.Game, error)
 	UpdateGame(ctx context.Context, game *models.Game) (*models.Game, error)
-	GetAllGame(ctx context.Context) (map[int64]*models.Game, error)
-	DeleteGame(ctx context.Context, id int64) error
+	GetAllGame(ctx context.Context) (map[string]*models.Game, error)
+	DeleteGame(ctx context.Context, id string) error
 }
 
 type GameHandler struct {
@@ -73,14 +72,7 @@ func (h *GameHandler) Create(w http.ResponseWriter, r *http.Request) {
 }
 
 func (h *GameHandler) GetGameById(w http.ResponseWriter, r *http.Request) {
-	id := chi.URLParam(r, "id")
-	idInt64, err := strconv.ParseInt(id, 10, 64) // TODO переписать айдишники
-	if err != nil {
-		writeJSON(w, http.StatusBadRequest, err.Error())
-		return
-	}
-
-	game, err := h.service.GetGameById(r.Context(), idInt64)
+	game, err := h.service.GetGameById(r.Context(), chi.URLParam(r, "id"))
 	if err != nil {
 		writeJSON(w, http.StatusNotFound, err.Error())
 		return
@@ -96,17 +88,10 @@ func (h *GameHandler) UpdateGame(w http.ResponseWriter, r *http.Request) {
 		return
 	}
 
-	id := chi.URLParam(r, "id")
-	idInt64, err := strconv.ParseInt(id, 10, 64) // TODO переписать айдишники
-	if err != nil {
-		writeJSON(w, http.StatusBadRequest, err.Error())
-		return
-	}
-
 	game, err := h.service.UpdateGame(
 		r.Context(),
 		&models.Game{
-			ID:        idInt64,
+			ID:        chi.URLParam(r, "id"),
 			Name:      req.Name,
 			Publisher: req.Publisher,
 		},
@@ -130,14 +115,7 @@ func (h *GameHandler) GetAllGame(w http.ResponseWriter, r *http.Request) {
 }
 
 func (h *GameHandler) DeleteGame(w http.ResponseWriter, r *http.Request) {
-	id := chi.URLParam(r, "id")
-	idInt64, err := strconv.ParseInt(id, 10, 64)
-	if err != nil {
-		writeJSON(w, http.StatusBadRequest, err.Error())
-		return
-	}
-
-	err = h.service.DeleteGame(r.Context(), idInt64)
+	err := h.service.DeleteGame(r.Context(), chi.URLParam(r, "id"))
 	if err != nil {
 		writeJSON(w, http.StatusInternalServerError, err.Error())
 		return

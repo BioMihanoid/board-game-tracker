@@ -46,7 +46,7 @@ func main() {
 			if err != nil {
 				fmt.Printf("Не получилось добавить игру, попробуйте ещё раз\n\n")
 			}
-			fmt.Printf("Игра успешно добавлена с id: %d\n\n", id)
+			fmt.Printf("Игра успешно добавлена с id: %s\n\n", id)
 		case "2":
 			fmt.Println()
 			handler.PrintAllGames(ctx)

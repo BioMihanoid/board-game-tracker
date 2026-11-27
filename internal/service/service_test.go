@@ -50,7 +50,7 @@ func TestAddGame(t *testing.T) {
 		Name:      "test",
 		Publisher: "test publisher",
 	}
-	expectedID := int64(1)
+	expectedID := "1"
 	repo := mocks.NewMockGameRepository(t)
 	repo.EXPECT().SaveGame(ctx, game).Return(expectedID, nil)
 	service := NewGameService(repo)
@@ -74,7 +74,7 @@ func TestGetGameById(t *testing.T) {
 				Name:      "test",
 				Publisher: "test publisher",
 			}
-			id := int64(1)
+			id := "1"
 			repo := mocks.NewMockGameRepository(t)
 			repo.EXPECT().GetGameById(ctx, id).Return(game, nil)
 			service := NewGameService(repo)
@@ -92,7 +92,7 @@ func TestGetGameById(t *testing.T) {
 			t.Parallel()
 
 			ctx := context.Background()
-			id := int64(1)
+			id := "1"
 			repo := mocks.NewMockGameRepository(t)
 			repo.EXPECT().GetGameById(ctx, id).Return(nil, fmt.Errorf("error"))
 			service := NewGameService(repo)
@@ -114,8 +114,8 @@ func TestGetAllGame(t *testing.T) {
 			t.Parallel()
 
 			ctx := context.Background()
-			games := map[int64]*models.Game{
-				1: {
+			games := map[string]*models.Game{
+				"1": {
 					Name:      "test",
 					Publisher: "test publisher",
 				},
@@ -158,13 +158,13 @@ func TestGetAdditionalContentByGameBaseID(t *testing.T) {
 			t.Parallel()
 
 			ctx := context.Background()
-			games := map[int64]*models.Game{
-				1: {
+			games := map[string]*models.Game{
+				"1": {
 					Name:      "test",
 					Publisher: "test publisher",
 				},
 			}
-			id := int64(1)
+			id := "1"
 			repo := mocks.NewMockGameRepository(t)
 			repo.EXPECT().GetAdditionalContentByGameBaseID(ctx, id).Return(games, nil)
 			service := NewGameService(repo)
@@ -182,7 +182,7 @@ func TestGetAdditionalContentByGameBaseID(t *testing.T) {
 			t.Parallel()
 
 			ctx := context.Background()
-			id := int64(1)
+			id := "1"
 			repo := mocks.NewMockGameRepository(t)
 			repo.EXPECT().GetAdditionalContentByGameBaseID(ctx, id).Return(nil, fmt.Errorf("error"))
 			service := NewGameService(repo)

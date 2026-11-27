@@ -3,13 +3,14 @@ package memory
 import (
 	"context"
 	"fmt"
+	"strconv"
 	"sync"
 
 	"board-game-tracker/internal/models"
 )
 
 type GameRepository struct {
-	m  map[int64]*models.Game
+	m  map[string]*models.Game
 	rw sync.RWMutex
 }
 
@@ -19,7 +20,7 @@ func NewGameRepository() *GameRepository {
 	}
 }
 
-func (gr *GameRepository) GetGameById(_ context.Context, id int64) (*models.Game, error) {
+func (gr *GameRepository) GetGameById(_ context.Context, id string) (*models.Game, error) {
 	if val, ok := gr.m[id]; ok {
 		return val, nil
 	}
@@ -27,12 +28,12 @@ func (gr *GameRepository) GetGameById(_ context.Context, id int64) (*models.Game
 	return nil, fmt.Errorf("GetGameById: game not exist")
 }
 
-func (gr *GameRepository) GetAllGame(_ context.Context) (map[int64]*models.Game, error) {
+func (gr *GameRepository) GetAllGame(_ context.Context) (map[string]*models.Game, error) {
 	if gr == nil || len(gr.m) == 0 {
 		return nil, fmt.Errorf("GetAllGame: 0 games in db")
 	}
 
-	res := make(map[int64]*models.Game, len(gr.m))
+	res := make(map[string]*models.Game, len(gr.m))
 
 	for _, v := range gr.m {
 		if v.Type == models.MainGameType {
@@ -43,19 +44,19 @@ func (gr *GameRepository) GetAllGame(_ context.Context) (map[int64]*models.Game,
 	return res, nil
 }
 
-func (gr *GameRepository) GetAdditionalContentByGameBaseID(_ context.Context, id int64) (map[int64]*models.Game, error) {
+func (gr *GameRepository) GetAdditionalContentByGameBaseID(_ context.Context, id string) (map[string]*models.Game, error) {
 	if gr == nil || len(gr.m) == 0 {
 		return nil, fmt.Errorf("GetAdditionalContentByGameBaseID: 0 games in db")
 	}
 
-	res := make(map[int64]*models.Game, len(gr.m))
+	res := make(map[string]*models.Game, len(gr.m))
 
 	for _, v := range gr.m {
 		if v.Type == models.AdditionalContentGameType && v.ID == id {
 			return nil, fmt.Errorf("GetAdditionalContentByGameBaseId: id additional content game")
 		}
 
-		if v.Type == models.AdditionalContentGameType && v.BaseGameID == id {
+		if v.Type == models.AdditionalContentGameType && v.BaseGameID != nil && *v.BaseGameID == id {
 			res[v.ID] = v
 		}
 	}
@@ -67,8 +68,8 @@ func (gr *GameRepository) GetAdditionalContentByGameBaseID(_ context.Context, id
 	return res, nil
 }
 
-func (gr *GameRepository) SaveGame(ctx context.Context, game *models.Game) (int64, error) {
-	game.ID = int64(len(gr.m) + 1)
+func (gr *GameRepository) SaveGame(ctx context.Context, game *models.Game) (string, error) {
+	game.ID = strconv.Itoa(len(gr.m) + 1)
 
 	gr.rw.Lock()
 	gr.m[game.ID] = game
@@ -95,7 +96,7 @@ func (gr *GameRepository) UpdateGame(ctx context.Context, game *models.Game) (*m
 	return game, nil
 }
 
-func (gr *GameRepository) DeleteGame(ctx context.Context, id int64) error {
+func (gr *GameRepository) DeleteGame(ctx context.Context, id string) error {
 	gr.rw.Lock()
 	delete(gr.m, id)
 	gr.rw.Unlock()

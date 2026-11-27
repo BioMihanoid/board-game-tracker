@@ -7,12 +7,12 @@ import (
 )
 
 type GameRepository interface {
-	GetGameById(ctx context.Context, id int64) (*models.Game, error)
-	GetAllGame(ctx context.Context) (map[int64]*models.Game, error)
-	SaveGame(ctx context.Context, game *models.Game) (int64, error)
-	GetAdditionalContentByGameBaseID(ctx context.Context, id int64) (map[int64]*models.Game, error)
+	GetGameById(ctx context.Context, id string) (*models.Game, error)
+	GetAllGame(ctx context.Context) (map[string]*models.Game, error)
+	SaveGame(ctx context.Context, game *models.Game) (string, error)
+	GetAdditionalContentByGameBaseID(ctx context.Context, id string) (map[string]*models.Game, error)
 	UpdateGame(ctx context.Context, game *models.Game) (*models.Game, error)
-	DeleteGame(ctx context.Context, id int64) error
+	DeleteGame(ctx context.Context, id string) error
 }
 
 type GameService struct {
@@ -25,11 +25,11 @@ func NewGameService(repo GameRepository) *GameService {
 	}
 }
 
-func (gs *GameService) AddGame(ctx context.Context, game *models.Game) (int64, error) {
+func (gs *GameService) AddGame(ctx context.Context, game *models.Game) (string, error) {
 	return gs.repo.SaveGame(ctx, game)
 }
 
-func (gs *GameService) GetGameById(ctx context.Context, id int64) (*models.Game, error) {
+func (gs *GameService) GetGameById(ctx context.Context, id string) (*models.Game, error) {
 	game, err := gs.repo.GetGameById(ctx, id)
 	if err != nil {
 		return nil, err
@@ -38,7 +38,7 @@ func (gs *GameService) GetGameById(ctx context.Context, id int64) (*models.Game,
 	return game, nil
 }
 
-func (gs *GameService) GetAllGame(ctx context.Context) (map[int64]*models.Game, error) {
+func (gs *GameService) GetAllGame(ctx context.Context) (map[string]*models.Game, error) {
 	games, err := gs.repo.GetAllGame(ctx)
 	if err != nil {
 		return nil, err
@@ -47,7 +47,7 @@ func (gs *GameService) GetAllGame(ctx context.Context) (map[int64]*models.Game, 
 	return games, nil
 }
 
-func (gs *GameService) GetAdditionalContentByGameBaseID(ctx context.Context, id int64) (map[int64]*models.Game, error) {
+func (gs *GameService) GetAdditionalContentByGameBaseID(ctx context.Context, id string) (map[string]*models.Game, error) {
 	games, err := gs.repo.GetAdditionalContentByGameBaseID(ctx, id)
 	if err != nil {
 		return nil, err
@@ -60,6 +60,6 @@ func (gs *GameService) UpdateGame(ctx context.Context, game *models.Game) (*mode
 	return gs.repo.UpdateGame(ctx, game)
 }
 
-func (gs *GameService) DeleteGame(ctx context.Context, id int64) error {
+func (gs *GameService) DeleteGame(ctx context.Context, id string) error {
 	return gs.repo.DeleteGame(ctx, id)
 }

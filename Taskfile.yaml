@@ -52,23 +52,29 @@ tasks:
       - find . -type f -name '*.go' -not -path './bin/*' -exec {{.GCI}} write -s standard -s default -s "prefix(board-game-tracker)" {} +
 
   build:
-    desc: "Собирает приложение"
+    desc: "Собирает приложения"
     cmds:
       - mkdir -p {{.BIN_DIR}}
       - go build -o {{.BIN_DIR}}/board-game-tracker ./cmd/cli
+      - go build -o {{.BIN_DIR}}/board-game-tracker ./cmd/api
 
-  run:
+  run-cmd:
     desc: "Запускает консольное приложение"
     cmds:
       - go run ./cmd/cli
 
+  run-api:
+    desc: "Запускает консольное приложение"
+    cmds:
+      - go run ./cmd/api
+
   test:
-    desc: "Запускает все тесты"
+    desc: "Запускает все тесты проекта"
     cmds:
       - go test -v ./...
 
   test:race:
-    desc: "Запускает тесты с race detector"
+    desc: "Запускает все тесты проекта с race detector"
     cmds:
       - go test -race ./...
 
@@ -111,3 +117,12 @@ tasks:
       - mockery:install
     cmds:
       - '{{.MOCKERY}}'
+      - task: format
+
+  blt:
+    desc: "Сборка проектер, линтер и прогон всех тестов"
+    cmds:
+      - task: build
+      - task: format
+      - task: lint
+      - task: test

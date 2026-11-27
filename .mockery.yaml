@@ -18,3 +18,12 @@ packages:
       structname: "{{.Mock}}{{.InterfaceName}}"
     interfaces:
       GameService:
+
+  board-game-tracker/internal/handler/api:
+    config:
+      dir: "{{.InterfaceDir}}/mocks"
+      pkgname: mocks
+      filename: "game_service_mock.go"
+      structname: "{{.Mock}}{{.InterfaceName}}"
+    interfaces:
+      GameService:

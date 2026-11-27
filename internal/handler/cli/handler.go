@@ -12,10 +12,10 @@ import (
 )
 
 type GameService interface {
-	GetGameById(ctx context.Context, id int64) (*models.Game, error)
-	GetAllGame(ctx context.Context) (map[int64]*models.Game, error)
-	AddGame(ctx context.Context, game *models.Game) (int64, error)
-	GetAdditionalContentByGameBaseID(ctx context.Context, id int64) (map[int64]*models.Game, error)
+	GetGameById(ctx context.Context, id string) (*models.Game, error)
+	GetAllGame(ctx context.Context) (map[string]*models.Game, error)
+	AddGame(ctx context.Context, game *models.Game) (string, error)
+	GetAdditionalContentByGameBaseID(ctx context.Context, id string) (map[string]*models.Game, error)
 }
 
 type Handler struct {
@@ -32,12 +32,12 @@ func NewHandler(gameService GameService, scanner *bufio.Scanner) *Handler {
 
 func (h *Handler) PrintGameByID(ctx context.Context) {
 	var (
-		id   int64
+		id   string
 		game *models.Game
 		err  error
 	)
 	for {
-		id = h.getInt64Value("id")
+		id = h.getStringValue("id")
 		game, err = h.gameService.GetGameById(ctx, id)
 		if err != nil {
 			fmt.Printf("Игра с таким id отсуствует, попробуйте ещё раз\n\n")
@@ -65,7 +65,7 @@ func (h *Handler) PrintAllGames(ctx context.Context) {
 
 	for _, game := range games {
 		fmt.Printf(
-			"ID: %d\nИгра: %s\nТип: %s\nСтоимость: %0.2f\nИздатель: %s\n\n",
+			"ID: %s\nИгра: %s\nТип: %s\nСтоимость: %0.2f\nИздатель: %s\n\n",
 			game.ID,
 			game.Name,
 			game.Type,
@@ -76,9 +76,9 @@ func (h *Handler) PrintAllGames(ctx context.Context) {
 }
 
 func (h *Handler) PrintAllAdditionalContentByGameID(ctx context.Context) {
-	var id int64
+	var id string
 	for {
-		id = h.getInt64Value("id базовой")
+		id = h.getStringValue("id базовой")
 		_, err := h.gameService.GetGameById(ctx, id)
 		if err != nil {
 			fmt.Printf("Игра с таким id отсуствует, попробуйте ещё раз\n\n")
@@ -104,7 +104,7 @@ func (h *Handler) PrintAllAdditionalContentByGameID(ctx context.Context) {
 	}
 }
 
-func (h *Handler) AddGame(ctx context.Context) (int64, error) {
+func (h *Handler) AddGame(ctx context.Context) (string, error) {
 	game := &models.Game{}
 
 	game.Type = h.getGameType()
@@ -112,13 +112,13 @@ func (h *Handler) AddGame(ctx context.Context) (int64, error) {
 	if game.Type == models.AdditionalContentGameType || game.Type == models.PromoGameType {
 		var baseGame *models.Game
 		for {
-			baseGame, err := h.gameService.GetGameById(ctx, h.getInt64Value("id базовой игры"))
+			baseGame, err := h.gameService.GetGameById(ctx, h.getStringValue("id базовой игры"))
 			if err != nil {
 				fmt.Printf("Игра с таким id отсуствует, попробуйте ещё раз\n\n")
 				continue
 			}
 
-			game.BaseGameID = baseGame.ID
+			game.BaseGameID = &baseGame.ID
 			break
 		}
 
