@@ -11,9 +11,9 @@ import (
 
 type GameService interface {
 	AddGame(ctx context.Context, game *models.Game) (string, error)
-	GetGameById(ctx context.Context, id string) (*models.Game, error)
+	GetGameByID(ctx context.Context, id string) (*models.Game, error)
 	UpdateGame(ctx context.Context, game *models.Game) (*models.Game, error)
-	GetAllGame(ctx context.Context) (map[string]*models.Game, error)
+	GetAllGames(ctx context.Context) ([]*models.Game, error)
 	DeleteGame(ctx context.Context, id string) error
 }
 
@@ -72,7 +72,7 @@ func (h *GameHandler) Create(w http.ResponseWriter, r *http.Request) {
 }
 
 func (h *GameHandler) GetGameById(w http.ResponseWriter, r *http.Request) {
-	game, err := h.service.GetGameById(r.Context(), chi.URLParam(r, "id"))
+	game, err := h.service.GetGameByID(r.Context(), chi.URLParam(r, "id"))
 	if err != nil {
 		writeJSON(w, http.StatusNotFound, err.Error())
 		return
@@ -105,7 +105,7 @@ func (h *GameHandler) UpdateGame(w http.ResponseWriter, r *http.Request) {
 }
 
 func (h *GameHandler) GetAllGame(w http.ResponseWriter, r *http.Request) {
-	games, err := h.service.GetAllGame(r.Context())
+	games, err := h.service.GetAllGames(r.Context())
 	if err != nil {
 		writeJSON(w, http.StatusInternalServerError, err.Error())
 		return

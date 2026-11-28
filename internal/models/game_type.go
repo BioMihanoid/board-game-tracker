@@ -3,7 +3,7 @@ package models
 type GameType string
 
 const (
-	MainGameType              GameType = "Основная игра"
-	AdditionalContentGameType GameType = "Дополнение"
-	PromoGameType             GameType = "Промо"
+	GameTypeMain              GameType = "Основная игра"
+	ContentGameTypeAdditional GameType = "Дополнение"
+	GameTypePromo             GameType = "Промо"
 )

@@ -9,7 +9,8 @@ import (
 )
 
 type Dependencies struct {
-	GameService GameService
+	GameService       GameService
+	CollectionService CollectionService
 }
 
 func NewRouter(deps Dependencies) http.Handler {
@@ -27,11 +28,13 @@ func NewRouter(deps Dependencies) http.Handler {
 	)
 
 	gameHandler := NewGameHandler(deps.GameService)
+	collectionHandler := NewCollectionHandler(deps.CollectionService)
 
 	r.Route(
 		"/api/v1",
 		func(r chi.Router) {
 			r.Mount("/games", gameHandler.Routes())
+			r.Mount("/collection", collectionHandler.Routes())
 		},
 	)
 

@@ -5,16 +5,18 @@ packages:
     config:
       dir: "{{.InterfaceDir}}/mocks"
       pkgname: mocks
-      filename: "game_repository_mock.go"
+      filename: "{{snakecase .InterfaceName}}_mock.go"
       structname: "{{.Mock}}{{.InterfaceName}}"
     interfaces:
       GameRepository:
+      CollectionRepository:
+      GameGetter:
 
   board-game-tracker/internal/handler/cli:
     config:
       dir: "{{.InterfaceDir}}/mocks"
       pkgname: mocks
-      filename: "game_service_mock.go"
+      filename: "{{snakecase .InterfaceName}}_mock.go"
       structname: "{{.Mock}}{{.InterfaceName}}"
     interfaces:
       GameService:
@@ -23,7 +25,8 @@ packages:
     config:
       dir: "{{.InterfaceDir}}/mocks"
       pkgname: mocks
-      filename: "game_service_mock.go"
+      filename: "{{snakecase .InterfaceName}}_mock.go"
       structname: "{{.Mock}}{{.InterfaceName}}"
     interfaces:
       GameService:
+      CollectionService:

@@ -20,12 +20,15 @@ func main() {
 	slog.SetDefault(logger)
 
 	gameRepo := memory.NewGameRepository()
-
 	gameSvc := service.NewGameService(gameRepo)
+
+	collectionRepo := memory.NewCollectionRepository()
+	collectionSvc := service.NewCollectionService(collectionRepo, gameRepo)
 
 	router := api.NewRouter(
 		api.Dependencies{
-			GameService: gameSvc,
+			GameService:       gameSvc,
+			CollectionService: collectionSvc,
 		},
 	)
 

@@ -76,10 +76,10 @@ func TestGetGameById(t *testing.T) {
 			}
 			id := "1"
 			repo := mocks.NewMockGameRepository(t)
-			repo.EXPECT().GetGameById(ctx, id).Return(game, nil)
+			repo.EXPECT().GetGameByID(ctx, id).Return(game, nil)
 			service := NewGameService(repo)
 
-			actual, err := service.GetGameById(ctx, id)
+			actual, err := service.GetGameByID(ctx, id)
 
 			assert.Nil(t, err)
 			assert.Equal(t, game, actual)
@@ -94,10 +94,10 @@ func TestGetGameById(t *testing.T) {
 			ctx := context.Background()
 			id := "1"
 			repo := mocks.NewMockGameRepository(t)
-			repo.EXPECT().GetGameById(ctx, id).Return(nil, fmt.Errorf("error"))
+			repo.EXPECT().GetGameByID(ctx, id).Return(nil, fmt.Errorf("error"))
 			service := NewGameService(repo)
 
-			actual, err := service.GetGameById(ctx, id)
+			actual, err := service.GetGameByID(ctx, id)
 
 			assert.Nil(t, actual)
 			assert.Error(t, err)
@@ -114,17 +114,17 @@ func TestGetAllGame(t *testing.T) {
 			t.Parallel()
 
 			ctx := context.Background()
-			games := map[string]*models.Game{
-				"1": {
+			games := []*models.Game{
+				{
 					Name:      "test",
 					Publisher: "test publisher",
 				},
 			}
 			repo := mocks.NewMockGameRepository(t)
-			repo.EXPECT().GetAllGame(ctx).Return(games, nil)
+			repo.EXPECT().GetAllGames(ctx).Return(games, nil)
 			service := NewGameService(repo)
 
-			actual, err := service.GetAllGame(ctx)
+			actual, err := service.GetAllGames(ctx)
 
 			assert.Nil(t, err)
 			assert.Equal(t, games, actual)
@@ -138,10 +138,10 @@ func TestGetAllGame(t *testing.T) {
 
 			ctx := context.Background()
 			repo := mocks.NewMockGameRepository(t)
-			repo.EXPECT().GetAllGame(ctx).Return(nil, fmt.Errorf("error"))
+			repo.EXPECT().GetAllGames(ctx).Return(nil, fmt.Errorf("error"))
 			service := NewGameService(repo)
 
-			actual, err := service.GetAllGame(ctx)
+			actual, err := service.GetAllGames(ctx)
 
 			assert.Nil(t, actual)
 			assert.Error(t, err)
@@ -158,8 +158,8 @@ func TestGetAdditionalContentByGameBaseID(t *testing.T) {
 			t.Parallel()
 
 			ctx := context.Background()
-			games := map[string]*models.Game{
-				"1": {
+			games := []*models.Game{
+				{
 					Name:      "test",
 					Publisher: "test publisher",
 				},

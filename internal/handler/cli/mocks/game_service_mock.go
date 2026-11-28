@@ -116,23 +116,23 @@ func (_c *MockGameService_AddGame_Call) RunAndReturn(run func(ctx context.Contex
 }
 
 // GetAdditionalContentByGameBaseID provides a mock function for the type MockGameService
-func (_mock *MockGameService) GetAdditionalContentByGameBaseID(ctx context.Context, id string) (map[string]*models.Game, error) {
+func (_mock *MockGameService) GetAdditionalContentByGameBaseID(ctx context.Context, id string) ([]*models.Game, error) {
 	ret := _mock.Called(ctx, id)
 
 	if len(ret) == 0 {
 		panic("no return value specified for GetAdditionalContentByGameBaseID")
 	}
 
-	var r0 map[string]*models.Game
+	var r0 []*models.Game
 	var r1 error
-	if returnFunc, ok := ret.Get(0).(func(context.Context, string) (map[string]*models.Game, error)); ok {
+	if returnFunc, ok := ret.Get(0).(func(context.Context, string) ([]*models.Game, error)); ok {
 		return returnFunc(ctx, id)
 	}
-	if returnFunc, ok := ret.Get(0).(func(context.Context, string) map[string]*models.Game); ok {
+	if returnFunc, ok := ret.Get(0).(func(context.Context, string) []*models.Game); ok {
 		r0 = returnFunc(ctx, id)
 	} else {
 		if ret.Get(0) != nil {
-			r0 = ret.Get(0).(map[string]*models.Game)
+			r0 = ret.Get(0).([]*models.Game)
 		}
 	}
 	if returnFunc, ok := ret.Get(1).(func(context.Context, string) error); ok {
@@ -173,34 +173,34 @@ func (_c *MockGameService_GetAdditionalContentByGameBaseID_Call) Run(run func(ct
 	return _c
 }
 
-func (_c *MockGameService_GetAdditionalContentByGameBaseID_Call) Return(stringToGame map[string]*models.Game, err error) *MockGameService_GetAdditionalContentByGameBaseID_Call {
-	_c.Call.Return(stringToGame, err)
+func (_c *MockGameService_GetAdditionalContentByGameBaseID_Call) Return(games []*models.Game, err error) *MockGameService_GetAdditionalContentByGameBaseID_Call {
+	_c.Call.Return(games, err)
 	return _c
 }
 
-func (_c *MockGameService_GetAdditionalContentByGameBaseID_Call) RunAndReturn(run func(ctx context.Context, id string) (map[string]*models.Game, error)) *MockGameService_GetAdditionalContentByGameBaseID_Call {
+func (_c *MockGameService_GetAdditionalContentByGameBaseID_Call) RunAndReturn(run func(ctx context.Context, id string) ([]*models.Game, error)) *MockGameService_GetAdditionalContentByGameBaseID_Call {
 	_c.Call.Return(run)
 	return _c
 }
 
-// GetAllGame provides a mock function for the type MockGameService
-func (_mock *MockGameService) GetAllGame(ctx context.Context) (map[string]*models.Game, error) {
+// GetAllGames provides a mock function for the type MockGameService
+func (_mock *MockGameService) GetAllGames(ctx context.Context) ([]*models.Game, error) {
 	ret := _mock.Called(ctx)
 
 	if len(ret) == 0 {
-		panic("no return value specified for GetAllGame")
+		panic("no return value specified for GetAllGames")
 	}
 
-	var r0 map[string]*models.Game
+	var r0 []*models.Game
 	var r1 error
-	if returnFunc, ok := ret.Get(0).(func(context.Context) (map[string]*models.Game, error)); ok {
+	if returnFunc, ok := ret.Get(0).(func(context.Context) ([]*models.Game, error)); ok {
 		return returnFunc(ctx)
 	}
-	if returnFunc, ok := ret.Get(0).(func(context.Context) map[string]*models.Game); ok {
+	if returnFunc, ok := ret.Get(0).(func(context.Context) []*models.Game); ok {
 		r0 = returnFunc(ctx)
 	} else {
 		if ret.Get(0) != nil {
-			r0 = ret.Get(0).(map[string]*models.Game)
+			r0 = ret.Get(0).([]*models.Game)
 		}
 	}
 	if returnFunc, ok := ret.Get(1).(func(context.Context) error); ok {
@@ -211,18 +211,18 @@ func (_mock *MockGameService) GetAllGame(ctx context.Context) (map[string]*model
 	return r0, r1
 }
 
-// MockGameService_GetAllGame_Call is a *mock.Call that shadows Run/Return methods with type explicit version for method 'GetAllGame'
-type MockGameService_GetAllGame_Call struct {
+// MockGameService_GetAllGames_Call is a *mock.Call that shadows Run/Return methods with type explicit version for method 'GetAllGames'
+type MockGameService_GetAllGames_Call struct {
 	*mock.Call
 }
 
-// GetAllGame is a helper method to define mock.On call
+// GetAllGames is a helper method to define mock.On call
 //   - ctx context.Context
-func (_e *MockGameService_Expecter) GetAllGame(ctx any) *MockGameService_GetAllGame_Call {
-	return &MockGameService_GetAllGame_Call{Call: _e.mock.On("GetAllGame", ctx)}
+func (_e *MockGameService_Expecter) GetAllGames(ctx any) *MockGameService_GetAllGames_Call {
+	return &MockGameService_GetAllGames_Call{Call: _e.mock.On("GetAllGames", ctx)}
 }
 
-func (_c *MockGameService_GetAllGame_Call) Run(run func(ctx context.Context)) *MockGameService_GetAllGame_Call {
+func (_c *MockGameService_GetAllGames_Call) Run(run func(ctx context.Context)) *MockGameService_GetAllGames_Call {
 	_c.Call.Run(func(args mock.Arguments) {
 		var arg0 context.Context
 		if args[0] != nil {
@@ -235,22 +235,22 @@ func (_c *MockGameService_GetAllGame_Call) Run(run func(ctx context.Context)) *M
 	return _c
 }
 
-func (_c *MockGameService_GetAllGame_Call) Return(stringToGame map[string]*models.Game, err error) *MockGameService_GetAllGame_Call {
-	_c.Call.Return(stringToGame, err)
+func (_c *MockGameService_GetAllGames_Call) Return(games []*models.Game, err error) *MockGameService_GetAllGames_Call {
+	_c.Call.Return(games, err)
 	return _c
 }
 
-func (_c *MockGameService_GetAllGame_Call) RunAndReturn(run func(ctx context.Context) (map[string]*models.Game, error)) *MockGameService_GetAllGame_Call {
+func (_c *MockGameService_GetAllGames_Call) RunAndReturn(run func(ctx context.Context) ([]*models.Game, error)) *MockGameService_GetAllGames_Call {
 	_c.Call.Return(run)
 	return _c
 }
 
-// GetGameById provides a mock function for the type MockGameService
-func (_mock *MockGameService) GetGameById(ctx context.Context, id string) (*models.Game, error) {
+// GetGameByID provides a mock function for the type MockGameService
+func (_mock *MockGameService) GetGameByID(ctx context.Context, id string) (*models.Game, error) {
 	ret := _mock.Called(ctx, id)
 
 	if len(ret) == 0 {
-		panic("no return value specified for GetGameById")
+		panic("no return value specified for GetGameByID")
 	}
 
 	var r0 *models.Game
@@ -273,19 +273,19 @@ func (_mock *MockGameService) GetGameById(ctx context.Context, id string) (*mode
 	return r0, r1
 }
 
-// MockGameService_GetGameById_Call is a *mock.Call that shadows Run/Return methods with type explicit version for method 'GetGameById'
-type MockGameService_GetGameById_Call struct {
+// MockGameService_GetGameByID_Call is a *mock.Call that shadows Run/Return methods with type explicit version for method 'GetGameByID'
+type MockGameService_GetGameByID_Call struct {
 	*mock.Call
 }
 
-// GetGameById is a helper method to define mock.On call
+// GetGameByID is a helper method to define mock.On call
 //   - ctx context.Context
 //   - id string
-func (_e *MockGameService_Expecter) GetGameById(ctx, id any) *MockGameService_GetGameById_Call {
-	return &MockGameService_GetGameById_Call{Call: _e.mock.On("GetGameById", ctx, id)}
+func (_e *MockGameService_Expecter) GetGameByID(ctx, id any) *MockGameService_GetGameByID_Call {
+	return &MockGameService_GetGameByID_Call{Call: _e.mock.On("GetGameByID", ctx, id)}
 }
 
-func (_c *MockGameService_GetGameById_Call) Run(run func(ctx context.Context, id string)) *MockGameService_GetGameById_Call {
+func (_c *MockGameService_GetGameByID_Call) Run(run func(ctx context.Context, id string)) *MockGameService_GetGameByID_Call {
 	_c.Call.Run(func(args mock.Arguments) {
 		var arg0 context.Context
 		if args[0] != nil {
@@ -303,12 +303,12 @@ func (_c *MockGameService_GetGameById_Call) Run(run func(ctx context.Context, id
 	return _c
 }
 
-func (_c *MockGameService_GetGameById_Call) Return(game *models.Game, err error) *MockGameService_GetGameById_Call {
+func (_c *MockGameService_GetGameByID_Call) Return(game *models.Game, err error) *MockGameService_GetGameByID_Call {
 	_c.Call.Return(game, err)
 	return _c
 }
 
-func (_c *MockGameService_GetGameById_Call) RunAndReturn(run func(ctx context.Context, id string) (*models.Game, error)) *MockGameService_GetGameById_Call {
+func (_c *MockGameService_GetGameByID_Call) RunAndReturn(run func(ctx context.Context, id string) (*models.Game, error)) *MockGameService_GetGameByID_Call {
 	_c.Call.Return(run)
 	return _c
 }
